@@ -23,6 +23,15 @@ model User {
 
   tokens   Token[]
   sessions Session[]
+
+  spotifyId            String     @unique
+  avatarUrl            String?
+  accessToken          String
+  accessTokenExpiresAt DateTime
+  refreshToken         String
+  labels               Label[]
+  tracks               Track[]
+  playlist             Playlist[]
 }
 
 model Session {
@@ -57,4 +66,52 @@ model Token {
 
 enum TokenType {
   RESET_PASSWORD
+}
+
+model Album {
+  id           String   @id
+  name         String
+  thumbnailUrl String
+  dateReleased DateTime
+  Track        Track[]
+}
+
+model Artist {
+  id     String   @id
+  name   String
+  genres String[]
+  Track  Track[]
+}
+
+model Track {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  spotifyId String   @unique
+  name      String
+  albumId   String
+  album     Album    @relation(fields: [albumId], references: [id])
+  artists   Artist[]
+  dateAdded DateTime
+  explicit  Boolean
+  labels    Label[]
+}
+
+model Label {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
+  name          String
+  tracks        Track[]
+  smartCriteria String?
+  playlist      Playlist?
+}
+
+model Playlist {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  user      User   @relation(fields: [userId], references: [id])
+  spotifyId String @unique
+  labelId   Int    @unique
+  label     Label  @relation(fields: [labelId], references: [id])
 }
