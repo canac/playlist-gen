@@ -3,7 +3,7 @@ import { Box, Button } from "@mantine/core";
 import { InferGetServerSidePropsType } from "next";
 import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
-import { env } from "app/env";
+import { env } from "app/lib/env";
 
 export const getServerSideProps = gSSP(async ({ req, res, ctx }) => {
   const redirectUri = new URL(req.url ?? "", env.DOMAIN).searchParams.get("redirect") ?? "/";

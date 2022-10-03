@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { z } from "zod";
 import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
-import { env } from "app/env";
+import { env } from "app/lib/env";
 import db from "db";
 
 // POST https://accounts.spotify.com/api/token
