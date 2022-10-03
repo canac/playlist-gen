@@ -1,8 +1,8 @@
-import { InferGetServerSidePropsType } from "next";
 import { BlitzPage } from "@blitzjs/next";
+import { Box, Button } from "@mantine/core";
+import { InferGetServerSidePropsType } from "next";
 import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
-import { Box, Button } from "@mantine/core";
 import { env } from "app/env";
 
 export const getServerSideProps = gSSP(async ({ req, res, ctx }) => {

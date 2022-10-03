@@ -1,13 +1,13 @@
+import { BlitzPage } from "@blitzjs/next";
+import { Box, Text } from "@mantine/core";
 import { InferGetServerSidePropsType } from "next";
 import Link from "next/link";
-import { BlitzPage } from "@blitzjs/next";
-import Layout from "app/core/layouts/Layout";
-import { Box, Text } from "@mantine/core";
+import { useEffect } from "react";
+import { z } from "zod";
 import { gSSP } from "app/blitz-server";
+import Layout from "app/core/layouts/Layout";
 import { env } from "app/env";
 import db from "db";
-import { z } from "zod";
-import { useEffect } from "react";
 
 // POST https://accounts.spotify.com/api/token
 // Only includes fields that we care about

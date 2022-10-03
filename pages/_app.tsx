@@ -1,8 +1,8 @@
-import { ErrorFallbackProps, ErrorComponent, ErrorBoundary, AppProps } from "@blitzjs/next";
+import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps } from "@blitzjs/next";
+import { MantineProvider } from "@mantine/core";
 import { AuthenticationError, AuthorizationError } from "blitz";
 import React from "react";
 import { withBlitz } from "app/blitz-client";
-import { MantineProvider } from "@mantine/core";
 import { emotionCache } from "app/emotion-cache";
 
 function RootErrorFallback({ error }: ErrorFallbackProps) {
