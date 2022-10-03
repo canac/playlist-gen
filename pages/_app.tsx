@@ -2,6 +2,8 @@ import { ErrorFallbackProps, ErrorComponent, ErrorBoundary, AppProps } from "@bl
 import { AuthenticationError, AuthorizationError } from "blitz";
 import React from "react";
 import { withBlitz } from "app/blitz-client";
+import { MantineProvider } from "@mantine/core";
+import { emotionCache } from "app/emotion-cache";
 
 function RootErrorFallback({ error }: ErrorFallbackProps) {
   if (error instanceof AuthenticationError) {
@@ -27,7 +29,16 @@ function MyApp({ Component, pageProps }: AppProps) {
   const getLayout = Component.getLayout || ((page) => page);
   return (
     <ErrorBoundary FallbackComponent={RootErrorFallback}>
-      {getLayout(<Component {...pageProps} />)}
+      <MantineProvider
+        withGlobalStyles
+        withNormalizeCSS
+        theme={{
+          colorScheme: "light",
+        }}
+        emotionCache={emotionCache}
+      >
+        {getLayout(<Component {...pageProps} />)}
+      </MantineProvider>
     </ErrorBoundary>
   );
 }

@@ -1,19 +1,58 @@
+import { InferGetServerSidePropsType } from "next";
 import { BlitzPage } from "@blitzjs/next";
+import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
-import { LoginForm } from "app/auth/components/LoginForm";
-import { useRouter } from "next/router";
+import { Box, Button } from "@mantine/core";
+import { env } from "app/env";
 
-const LoginPage: BlitzPage = () => {
-  const router = useRouter();
+export const getServerSideProps = gSSP(async ({ req, res, ctx }) => {
+  const redirectUri = new URL(req.url ?? "", env.DOMAIN).searchParams.get("redirect") ?? "/";
 
+  if (ctx.session.$isAuthorized()) {
+    // Redirect to the home page if the user is already logged in
+    return {
+      props: {
+        spotifyOauthUrl: "",
+      },
+      redirect: {
+        destination: redirectUri,
+        permanent: false,
+      },
+    };
+  }
+
+  // Remember where the user needs to be redirected to after login
+  await ctx.session.$setPublicData({
+    redirectUri,
+  });
+
+  // Use the session handle as the OAuth state
+  const state = ctx.session.$handle;
+  if (!state) {
+    throw new Error("OAuth state is empty");
+  }
+  const qs = new URLSearchParams({
+    response_type: "code",
+    client_id: env.SPOTIFY_CLIENT_ID,
+    scope: "user-library-read,playlist-read-private,playlist-modify-private",
+    redirect_uri: `${env.DOMAIN}/auth/oauth_callback`,
+    state,
+  });
+  return {
+    props: {
+      spotifyOauthUrl: `https://accounts.spotify.com/authorize?${qs.toString()}`,
+    },
+  };
+});
+
+const LoginPage: BlitzPage = (props: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (
     <Layout title="Log In">
-      <LoginForm
-        onSuccess={(_user) => {
-          const next = router.query.next ? decodeURIComponent(router.query.next as string) : "/";
-          return router.push(next);
-        }}
-      />
+      <Box sx={{ textAlign: "center", paddingTop: "1em" }}>
+        <Button component="a" href={props.spotifyOauthUrl}>
+          Login with Spotify
+        </Button>
+      </Box>
     </Layout>
   );
 };
