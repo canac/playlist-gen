@@ -71,6 +71,8 @@ enum TokenType {
 
 model Album {
   id           String   @id
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   name         String
   thumbnailUrl String
   dateReleased DateTime
@@ -78,14 +80,18 @@ model Album {
 }
 
 model Artist {
-  id     String   @id
-  name   String
-  genres String[]
-  Track  Track[]
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  genres    String[]
+  Track     Track[]
 }
 
 model Track {
   id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   spotifyId String   @unique
@@ -100,6 +106,8 @@ model Track {
 
 model Label {
   id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   userId        Int
   user          User      @relation(fields: [userId], references: [id])
   name          String
@@ -109,10 +117,12 @@ model Label {
 }
 
 model Playlist {
-  id        Int    @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId    Int
-  user      User   @relation(fields: [userId], references: [id])
-  spotifyId String @unique
-  labelId   Int    @unique
-  label     Label  @relation(fields: [labelId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  spotifyId String   @unique
+  labelId   Int      @unique
+  label     Label    @relation(fields: [labelId], references: [id])
 }
