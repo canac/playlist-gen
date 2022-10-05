@@ -43,16 +43,10 @@ export const TracksList = () => {
 
 const TracksPage = () => {
   return (
-    <Layout>
-      <Head>
-        <title>Tracks</title>
-      </Head>
-
-      <div>
-        <Suspense fallback={<div>Loading...</div>}>
-          <TracksList />
-        </Suspense>
-      </div>
+    <Layout title="Tracks">
+      <Suspense fallback={<div>Loading...</div>}>
+        <TracksList />
+      </Suspense>
     </Layout>
   );
 };
