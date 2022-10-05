@@ -24,6 +24,10 @@
       "eslint --fix"
     ]
   },
+  "volta": {
+    "node": "16.17.1",
+    "npm": "8.10.0"
+  },
   "dependencies": {
     "@blitzjs/auth": "2.0.0-beta.4",
     "@blitzjs/next": "2.0.0-beta.4",
