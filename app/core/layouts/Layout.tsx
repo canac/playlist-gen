@@ -13,7 +13,6 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconCloudDownload, IconCloudUpload, IconLogout, IconUserCircle } from "@tabler/icons";
-import { assert } from "blitz";
 import Head from "next/head";
 import Link from "next/link";
 import React from "react";
@@ -26,7 +25,6 @@ const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
   children,
 }) => {
   const user = useCurrentUser();
-  assert(user !== null, "Not logged in");
 
   const [pullTracksMutation, { isLoading: pullLoading }] = useMutation(pullTracks);
   const [pushTracksMutation, { isLoading: pushLoading }] = useMutation(pushTracks);
@@ -85,7 +83,7 @@ const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
             <Menu shadow="md" width={200} position="bottom-end">
               <Menu.Target>
                 <ActionIcon size="lg" variant="filled" color="white" radius="xl">
-                  {user.avatarUrl ? (
+                  {user?.avatarUrl ? (
                     <Avatar alt="User avatar" src={user.avatarUrl} radius="xl" />
                   ) : (
                     <IconUserCircle />
