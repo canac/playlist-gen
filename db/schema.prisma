@@ -93,11 +93,11 @@ model Track {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   spotifyId String   @unique
   name      String
   albumId   String
-  album     Album    @relation(fields: [albumId], references: [id])
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   artists   Artist[]
   dateAdded DateTime
   explicit  Boolean
@@ -109,7 +109,7 @@ model Label {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   userId        Int
-  user          User      @relation(fields: [userId], references: [id])
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name          String
   tracks        Track[]
   smartCriteria String?
@@ -121,8 +121,8 @@ model Playlist {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   spotifyId String   @unique
   labelId   Int      @unique
-  label     Label    @relation(fields: [labelId], references: [id])
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

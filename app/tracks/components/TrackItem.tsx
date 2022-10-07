@@ -2,9 +2,9 @@ import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { Avatar, Box, Loader, MultiSelect, SelectItem, Text } from "@mantine/core";
 import { map } from "lodash";
 import { useState } from "react";
-import getLabels from "../queries/getLabels";
 import createLabel from "app/labels/mutations/createLabel";
 import setLabels from "app/labels/mutations/setLabels";
+import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/error";
 import { Album, Artist, Label, Track } from "db";
 
@@ -87,7 +87,7 @@ export default function TrackItem({ labels: allLabels, track }: TrackItemProps):
         onCreate={(labelName) => {
           handleAsyncErrors(
             (async () => {
-              const { id } = await createLabelMutation({ name: labelName });
+              const { id } = await createLabelMutation({ name: labelName, smartCriteria: null });
               // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
               await invalidateQuery(getLabels, {});
               setPendingLabel(null);

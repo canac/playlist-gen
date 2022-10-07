@@ -35,6 +35,7 @@
     "@emotion/react": "11.10.4",
     "@emotion/server": "11.10.0",
     "@mantine/core": "5.4.2",
+    "@mantine/form": "5.5.2",
     "@mantine/hooks": "5.4.2",
     "@mantine/next": "5.5.0",
     "@mantine/ssr": "5.4.2",

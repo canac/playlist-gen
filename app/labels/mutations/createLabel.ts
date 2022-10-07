@@ -6,6 +6,9 @@ import db from "db";
 const CreateLabel = z.object({
   // The name of the new label
   name: nonEmptyString,
+
+  // The smart criteria of the new label, or null if it is not a smart label
+  smartCriteria: z.union([nonEmptyString, z.null()]),
 });
 
 /*
@@ -14,7 +17,7 @@ const CreateLabel = z.object({
 export default resolver.pipe(
   resolver.zod(CreateLabel),
   resolver.authorize(),
-  async ({ name }, ctx) => {
+  async ({ name, smartCriteria }, ctx) => {
     const userId = ctx.session.userId;
 
     // Create the label
@@ -22,6 +25,7 @@ export default resolver.pipe(
       data: {
         userId,
         name,
+        smartCriteria,
       },
     });
 

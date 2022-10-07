@@ -21,10 +21,11 @@ import pullTracks from "app/spotify/mutations/pullTracks";
 import pushTracks from "app/spotify/mutations/pushTracks";
 import getTracks from "app/tracks/queries/getTracks";
 
-const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
-  title,
-  children,
-}) => {
+const Layout: BlitzLayout<{
+  title?: string;
+  children?: React.ReactNode;
+  navbar?: React.ReactElement;
+}> = ({ title, children, navbar }) => {
   const user = useCurrentUser();
 
   const [pullTracksMutation, { isLoading: pullLoading }] = useMutation(pullTracks);
@@ -56,7 +57,9 @@ const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
             <Link href={Routes.TracksPage()}>
               <Button component="a">Tracks</Button>
             </Link>
-            <Button>Labels</Button>
+            <Link href={Routes.LabelsPage()}>
+              <Button component="a">Labels</Button>
+            </Link>
             <Box sx={{ flex: 1 }} />
             <Tooltip label="Pull tracks from Spotify">
               <ActionIcon
@@ -101,6 +104,7 @@ const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
             </Menu>
           </Header>
         }
+        navbar={navbar}
       >
         {children}
       </AppShell>
