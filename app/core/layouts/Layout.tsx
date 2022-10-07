@@ -1,6 +1,6 @@
 import { BlitzLayout } from "@blitzjs/next";
 import { Routes } from "@blitzjs/next";
-import { useMutation } from "@blitzjs/rpc";
+import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import {
   ActionIcon,
   AppShell,
@@ -19,6 +19,7 @@ import React from "react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import pullTracks from "app/spotify/mutations/pullTracks";
 import pushTracks from "app/spotify/mutations/pushTracks";
+import getTracks from "app/tracks/queries/getTracks";
 
 const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
   title,
@@ -62,7 +63,11 @@ const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
                 size="lg"
                 variant="filled"
                 color="white"
-                onClick={() => pullTracksMutation()}
+                onClick={async () => {
+                  await pullTracksMutation();
+                  // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
+                  await invalidateQuery(getTracks, {});
+                }}
                 loading={pullLoading}
               >
                 <IconCloudDownload />
