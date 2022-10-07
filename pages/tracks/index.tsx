@@ -16,20 +16,14 @@ export const TracksList = () => {
     skip: ITEMS_PER_PAGE * page,
     take: ITEMS_PER_PAGE,
   });
-  const [{ labels }, { refetch: refetchLabels }] = useQuery(getLabels, {});
+  const [{ labels }] = useQuery(getLabels, {});
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
 
   return (
     <div>
-      <TrackList
-        tracks={tracks}
-        labels={labels}
-        refreshLabels={async () => {
-          await refetchLabels();
-        }}
-      />
+      <TrackList tracks={tracks} labels={labels} />
 
       <button disabled={page === 0} onClick={goToPreviousPage}>
         Previous

@@ -1,7 +1,8 @@
-import { useMutation } from "@blitzjs/rpc";
+import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { Avatar, Box, Loader, MultiSelect, SelectItem, Text } from "@mantine/core";
 import { map } from "lodash";
 import { useState } from "react";
+import getLabels from "../queries/getLabels";
 import createLabel from "app/labels/mutations/createLabel";
 import setLabels from "app/labels/mutations/setLabels";
 import { handleAsyncErrors } from "app/lib/error";
@@ -14,14 +15,9 @@ export type TrackItemProps = {
     labels: Label[];
   };
   labels: Label[];
-  refreshLabels: () => Promise<void>;
 };
 
-export default function TrackItem({
-  labels: allLabels,
-  track,
-  refreshLabels,
-}: TrackItemProps): JSX.Element {
+export default function TrackItem({ labels: allLabels, track }: TrackItemProps): JSX.Element {
   const [setLabelsMutation, { isLoading: setLabelsLoading }] = useMutation(setLabels);
   const [createLabelMutation, { isLoading: createLabelLoading }] = useMutation(createLabel);
 
@@ -92,7 +88,8 @@ export default function TrackItem({
           handleAsyncErrors(
             (async () => {
               const { id } = await createLabelMutation({ name: labelName });
-              await refreshLabels();
+              // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
+              await invalidateQuery(getLabels, {});
               setPendingLabel(null);
               return updateLabels([...trackLabels, id.toString()]);
             })(),
