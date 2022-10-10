@@ -1,7 +1,8 @@
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
-import { Box, Button, Checkbox, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Box, Button, Checkbox, TextInput, Title, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { IconX } from "@tabler/icons";
 import { useRouter } from "next/router";
 import createLabel from "../mutations/createLabel";
 import getLabels from "../queries/getLabels";
@@ -16,6 +17,11 @@ export default function CreateLabelForm(): JSX.Element {
     initialValues: { name: "", smartLabel: false, smartCriteria: "" },
   });
 
+  // Leave the create label form
+  function close(): Promise<boolean> {
+    return router.push(Routes.LabelsPage());
+  }
+
   return (
     <Box
       component="form"
@@ -28,7 +34,7 @@ export default function CreateLabelForm(): JSX.Element {
             });
             // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
             await invalidateQuery(getLabels, {});
-            await router.push(Routes.LabelsPage());
+            await close();
           })(),
         );
       })}
@@ -39,7 +45,16 @@ export default function CreateLabelForm(): JSX.Element {
         gap: "1em",
       }}
     >
-      <Title order={2}>Create label</Title>
+      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+        <Title order={2} sx={{ flex: 1 }}>
+          Create label
+        </Title>
+        <Tooltip label="Close">
+          <ActionIcon aria-label="Close" onClick={() => handleAsyncErrors(close())}>
+            <IconX />
+          </ActionIcon>
+        </Tooltip>
+      </Box>
       <TextInput required label="Label name" {...form.getInputProps("name")} />
       <Checkbox label="Smart label" {...form.getInputProps("smartLabel")} />
       {form.values.smartLabel ? (

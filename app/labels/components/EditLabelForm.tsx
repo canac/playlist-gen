@@ -1,8 +1,8 @@
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation, useQuery } from "@blitzjs/rpc";
-import { Box, Button, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Box, Button, TextInput, Title, Tooltip } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconTrash } from "@tabler/icons";
+import { IconTrash, IconX } from "@tabler/icons";
 import { useRouter } from "next/router";
 import deleteLabel from "../mutations/deleteLabel";
 import editLabel from "../mutations/editLabel";
@@ -25,6 +25,11 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
     initialValues: { name, smartCriteria: smartCriteria ?? "" },
   });
 
+  // Leave the edit label form
+  function close(): Promise<boolean> {
+    return router.push(Routes.LabelsPage());
+  }
+
   return (
     <Box
       component="form"
@@ -37,7 +42,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
             });
             // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
             await invalidateQuery(getLabels, {});
-            await router.push(Routes.LabelsPage());
+            await close();
           })(),
         );
       })}
@@ -48,7 +53,16 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
         gap: "1em",
       }}
     >
-      <Title order={2}>Edit label ({name})</Title>
+      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+        <Title order={2} sx={{ flex: 1 }}>
+          Edit label ({name})
+        </Title>
+        <Tooltip label="Close">
+          <ActionIcon aria-label="Close" onClick={() => handleAsyncErrors(close())}>
+            <IconX />
+          </ActionIcon>
+        </Tooltip>
+      </Box>
       <TextInput required label="Label name" {...form.getInputProps("name")} />
       {smartCriteria === null ? null : (
         <SmartCriteriaInput
