@@ -1,7 +1,9 @@
+import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation, useQuery } from "@blitzjs/rpc";
 import { Box, Button, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconTrash } from "@tabler/icons";
+import { useRouter } from "next/router";
 import deleteLabel from "../mutations/deleteLabel";
 import editLabel from "../mutations/editLabel";
 import getLabel from "../queries/getLabel";
@@ -11,12 +13,10 @@ import { handleAsyncErrors } from "app/lib/error";
 
 export type EditLabelProps = {
   labelId: number;
-
-  // Called when the label is done being edited (whether it was saved or deleted)
-  onDone?: () => void;
 };
 
-export default function EditLabelForm({ labelId, onDone }: EditLabelProps): JSX.Element {
+export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element {
+  const router = useRouter();
   const [{ name, smartCriteria }] = useQuery(getLabel, { labelId });
   const [editLabelMutation, { isLoading: isSaving }] = useMutation(editLabel);
   const [deleteLabelMutation, { isLoading: isDeleting }] = useMutation(deleteLabel);
@@ -37,7 +37,7 @@ export default function EditLabelForm({ labelId, onDone }: EditLabelProps): JSX.
             });
             // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
             await invalidateQuery(getLabels, {});
-            onDone?.();
+            await router.push(Routes.LabelsPage());
           })(),
         );
       })}
@@ -60,12 +60,14 @@ export default function EditLabelForm({ labelId, onDone }: EditLabelProps): JSX.
       <Button
         type="submit"
         loading={isSaving}
+        disabled={isDeleting}
         sx={{ width: "10em", alignSelf: "center", marginBottom: "1em" }}
       >
         {isSaving ? "Saving..." : "Save"}
       </Button>
       <Button
         loading={isDeleting}
+        disabled={isSaving}
         color="red"
         leftIcon={<IconTrash />}
         sx={{ width: "10em", alignSelf: "center" }}
@@ -73,7 +75,7 @@ export default function EditLabelForm({ labelId, onDone }: EditLabelProps): JSX.
           await deleteLabelMutation({ labelId });
           // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
           await invalidateQuery(getLabels, {});
-          onDone?.();
+          await router.push(Routes.LabelsPage());
         }}
       >
         {isSaving ? "Deleting..." : "Delete"}

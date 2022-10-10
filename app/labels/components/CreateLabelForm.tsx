@@ -1,17 +1,15 @@
+import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { Box, Button, Checkbox, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useRouter } from "next/router";
 import createLabel from "../mutations/createLabel";
 import getLabels from "../queries/getLabels";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { handleAsyncErrors } from "app/lib/error";
 
-export type CreateLabelProps = {
-  // Called when the label is done being created
-  onDone?: () => void;
-};
-
-export default function CreateLabelForm({ onDone }: CreateLabelProps): JSX.Element {
+export default function CreateLabelForm(): JSX.Element {
+  const router = useRouter();
   const [createLabelMutation, { isLoading: isCreating }] = useMutation(createLabel);
 
   const form = useForm({
@@ -30,7 +28,7 @@ export default function CreateLabelForm({ onDone }: CreateLabelProps): JSX.Eleme
             });
             // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
             await invalidateQuery(getLabels, {});
-            onDone?.();
+            await router.push(Routes.LabelsPage());
           })(),
         );
       })}

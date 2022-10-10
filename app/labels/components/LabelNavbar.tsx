@@ -1,3 +1,4 @@
+import { Routes } from "@blitzjs/next";
 import { usePaginatedQuery } from "@blitzjs/rpc";
 import { ActionIcon, Box, Navbar, Text, UnstyledButton } from "@mantine/core";
 import {
@@ -7,19 +8,16 @@ import {
   IconChevronsRight,
   IconCirclePlus,
 } from "@tabler/icons";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import LabelList from "app/labels/components/LabelList";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/error";
 
-export type LabelNavbarProps = {
-  onChange?: (labelId: number | "new") => void;
-};
-
 const ITEMS_PER_PAGE = 100;
 
-export default function LabelNavbar(props: LabelNavbarProps): JSX.Element {
+export default function LabelNavbar(): JSX.Element {
   const router = useRouter();
   const page = Math.max(Number(router.query.page) || 1, 1);
   const [{ labels, count }] = usePaginatedQuery(getLabels, {
@@ -34,24 +32,26 @@ export default function LabelNavbar(props: LabelNavbarProps): JSX.Element {
 
   return (
     <Navbar width={{ base: 250 }} sx={{ display: "flex" }}>
-      <LabelList labels={labels} onChange={props.onChange} />
-      <UnstyledButton
-        sx={(theme) => ({
-          padding: theme.spacing.xs,
-          borderRadius: theme.radius.sm,
-          width: "100%",
+      <LabelList labels={labels} />
+      <Link href={Routes.NewLabelPage()}>
+        <UnstyledButton
+          component="a"
+          sx={(theme) => ({
+            padding: theme.spacing.xs,
+            borderRadius: theme.radius.sm,
+            width: "100%",
 
-          "&:hover": {
-            backgroundColor: theme.colors.gray[0],
-          },
-        })}
-        onClick={() => props.onChange?.("new")}
-      >
-        <Text weight="bold" sx={{ display: "flex", alignItems: "center" }}>
-          <IconCirclePlus size={16} style={{ marginRight: "0.25em" }} color="green" />
-          Create label...
-        </Text>
-      </UnstyledButton>
+            "&:hover": {
+              backgroundColor: theme.colors.gray[0],
+            },
+          })}
+        >
+          <Text weight="bold" sx={{ display: "flex", alignItems: "center" }}>
+            <IconCirclePlus size={16} style={{ marginRight: "0.25em" }} color="green" />
+            Create label...
+          </Text>
+        </UnstyledButton>
+      </Link>
       <Box sx={{ flex: 1 }} />
 
       {pageCount > 1 ? (
