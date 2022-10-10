@@ -5,7 +5,7 @@ import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
 import { env } from "app/lib/env";
 
-export const getServerSideProps = gSSP(async ({ req, res, ctx }) => {
+export const getServerSideProps = gSSP(async ({ req, ctx }) => {
   const redirectUri = new URL(req.url ?? "", env.DOMAIN).searchParams.get("redirect") ?? "/";
 
   if (ctx.session.$isAuthorized()) {
