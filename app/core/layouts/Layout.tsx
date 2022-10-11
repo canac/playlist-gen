@@ -64,8 +64,7 @@ const Layout: BlitzLayout<{
                   color="white"
                   onClick={async () => {
                     await pullTracksMutation();
-                    // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
-                    await invalidateQuery(getTracks, {});
+                    await invalidateQuery(getTracks);
                   }}
                   loading={pullLoading}
                 >

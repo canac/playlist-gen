@@ -62,8 +62,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
                 smartCriteria: smartCriteria === null ? undefined : values.smartCriteria,
               },
             });
-            // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
-            await invalidateQuery(getLabels, {});
+            await invalidateQuery(getLabels);
             await close();
           })(),
         );
@@ -111,8 +110,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
           }
 
           await deleteLabelMutation({ labelId });
-          // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
-          await invalidateQuery(getLabels, {});
+          await invalidateQuery(getLabels);
           await close();
         }}
       >

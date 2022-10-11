@@ -33,8 +33,7 @@ export default function CreateLabelForm(): JSX.Element {
               name,
               smartCriteria: smartLabel ? smartCriteria : null,
             });
-            // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
-            await invalidateQuery(getLabels, {});
+            await invalidateQuery(getLabels);
             await close();
           })(),
         );

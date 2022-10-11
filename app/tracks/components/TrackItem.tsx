@@ -88,8 +88,7 @@ export default function TrackItem({ labels: allLabels, track }: TrackItemProps):
           handleAsyncErrors(
             (async () => {
               const { id } = await createLabelMutation({ name: labelName, smartCriteria: null });
-              // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
-              await invalidateQuery(getLabels, {});
+              await invalidateQuery(getLabels);
               setPendingLabel(null);
               return updateLabels([...trackLabels, id.toString()]);
             })(),
