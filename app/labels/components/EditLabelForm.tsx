@@ -52,12 +52,15 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
   return (
     <Box
       component="form"
-      onSubmit={form.onSubmit(({ name, smartCriteria }) => {
+      onSubmit={form.onSubmit((values) => {
         handleAsyncErrors(
           (async () => {
             await editLabelMutation({
               labelId,
-              fields: { name, smartCriteria: smartCriteria ?? undefined },
+              fields: {
+                name: values.name,
+                smartCriteria: smartCriteria === null ? undefined : values.smartCriteria,
+              },
             });
             // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
             await invalidateQuery(getLabels, {});
