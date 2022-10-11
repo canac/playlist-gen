@@ -1,6 +1,6 @@
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation, useQuery } from "@blitzjs/rpc";
-import { ActionIcon, Box, Button, TextInput, Title, Tooltip } from "@mantine/core";
+import { Box, Button, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconTrash, IconX } from "@tabler/icons";
 import { useRouter } from "next/router";
@@ -9,6 +9,7 @@ import editLabel from "../mutations/editLabel";
 import getLabel from "../queries/getLabel";
 import getLabels from "../queries/getLabels";
 import SmartCriteriaInput from "./SmartCriteriaInput";
+import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import { handleAsyncErrors } from "app/lib/error";
 
 export type EditLabelProps = {
@@ -57,11 +58,9 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
         <Title order={2} sx={{ flex: 1 }}>
           Edit label ({name})
         </Title>
-        <Tooltip label="Close">
-          <ActionIcon aria-label="Close" onClick={() => handleAsyncErrors(close())}>
-            <IconX />
-          </ActionIcon>
-        </Tooltip>
+        <TooltipActionIcon label="Close" onClick={() => handleAsyncErrors(close())}>
+          <IconX />
+        </TooltipActionIcon>
       </Box>
       <TextInput required label="Label name" {...form.getInputProps("name")} />
       {smartCriteria === null ? null : (

@@ -1,12 +1,13 @@
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
-import { ActionIcon, Box, Button, Checkbox, TextInput, Title, Tooltip } from "@mantine/core";
+import { Box, Button, Checkbox, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconX } from "@tabler/icons";
 import { useRouter } from "next/router";
 import createLabel from "../mutations/createLabel";
 import getLabels from "../queries/getLabels";
 import SmartCriteriaInput from "./SmartCriteriaInput";
+import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import { handleAsyncErrors } from "app/lib/error";
 
 export default function CreateLabelForm(): JSX.Element {
@@ -49,11 +50,9 @@ export default function CreateLabelForm(): JSX.Element {
         <Title order={2} sx={{ flex: 1 }}>
           Create label
         </Title>
-        <Tooltip label="Close">
-          <ActionIcon aria-label="Close" onClick={() => handleAsyncErrors(close())}>
-            <IconX />
-          </ActionIcon>
-        </Tooltip>
+        <TooltipActionIcon label="Close" onClick={() => handleAsyncErrors(close())}>
+          <IconX />
+        </TooltipActionIcon>
       </Box>
       <TextInput required label="Label name" {...form.getInputProps("name")} />
       <Checkbox label="Smart label" {...form.getInputProps("smartLabel")} />

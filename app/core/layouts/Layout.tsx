@@ -1,22 +1,13 @@
 import { BlitzLayout } from "@blitzjs/next";
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
-import {
-  ActionIcon,
-  AppShell,
-  Avatar,
-  Box,
-  Button,
-  Header,
-  Menu,
-  Title,
-  Tooltip,
-} from "@mantine/core";
+import { ActionIcon, AppShell, Avatar, Box, Button, Header, Menu, Title } from "@mantine/core";
 import { IconCloudDownload, IconCloudUpload, IconLogout, IconUserCircle } from "@tabler/icons";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
+import { TooltipActionIcon } from "../components/TooltipActionIcon";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import logout from "app/auth/mutations/logout";
 import pullTracks from "app/spotify/mutations/pullTracks";
@@ -66,38 +57,42 @@ const Layout: BlitzLayout<{
                   <Button component="a">Labels</Button>
                 </Link>
                 <Box sx={{ flex: 1 }} />
-                <Tooltip label="Pull tracks from Spotify">
-                  <ActionIcon
-                    size="lg"
-                    variant="filled"
-                    color="white"
-                    onClick={async () => {
-                      await pullTracksMutation();
-                      // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
-                      await invalidateQuery(getTracks, {});
-                    }}
-                    loading={pullLoading}
-                  >
-                    <IconCloudDownload />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label="Push playlists to Spotify">
-                  <ActionIcon
-                    size="lg"
-                    variant="filled"
-                    color="white"
-                    onClick={() => pushTracksMutation()}
-                    loading={pushLoading}
-                  >
-                    <IconCloudUpload />
-                  </ActionIcon>
-                </Tooltip>
+                <TooltipActionIcon
+                  label="Pull tracks from Spotify"
+                  size="lg"
+                  variant="filled"
+                  color="white"
+                  onClick={async () => {
+                    await pullTracksMutation();
+                    // Remove second parameter when https://github.com/blitz-js/blitz/issues/3725 is fixed
+                    await invalidateQuery(getTracks, {});
+                  }}
+                  loading={pullLoading}
+                >
+                  <IconCloudDownload />
+                </TooltipActionIcon>
+                <TooltipActionIcon
+                  label="Push playlists to Spotify"
+                  size="lg"
+                  variant="filled"
+                  color="white"
+                  onClick={() => pushTracksMutation()}
+                  loading={pushLoading}
+                >
+                  <IconCloudUpload />
+                </TooltipActionIcon>
 
                 <Menu shadow="md" width={200} position="bottom-end">
                   <Menu.Target>
-                    <ActionIcon size="lg" variant="filled" color="white" radius="xl">
+                    <ActionIcon
+                      size="lg"
+                      variant="filled"
+                      color="white"
+                      radius="xl"
+                      aria-label="User avatar"
+                    >
                       {user?.avatarUrl ? (
-                        <Avatar alt="User avatar" src={user.avatarUrl} radius="xl" />
+                        <Avatar src={user.avatarUrl} radius="xl" />
                       ) : (
                         <IconUserCircle />
                       )}

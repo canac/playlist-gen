@@ -1,6 +1,6 @@
 import { Routes } from "@blitzjs/next";
 import { usePaginatedQuery } from "@blitzjs/rpc";
-import { ActionIcon, Box, Navbar, Text, UnstyledButton } from "@mantine/core";
+import { Box, Navbar, Text, UnstyledButton } from "@mantine/core";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
+import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import LabelList from "app/labels/components/LabelList";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/error";
@@ -56,33 +57,41 @@ export default function LabelNavbar(): JSX.Element {
 
       {pageCount > 1 ? (
         <Box sx={(theme) => ({ display: "flex", flexDirection: "row", padding: theme.spacing.xs })}>
-          <ActionIcon variant="transparent" disabled={page === 1} onClick={() => gotoPage(1)}>
+          <TooltipActionIcon
+            label="Go to first page"
+            variant="transparent"
+            disabled={page === 1}
+            onClick={() => gotoPage(1)}
+          >
             <IconChevronsLeft />
-          </ActionIcon>
-          <ActionIcon
+          </TooltipActionIcon>
+          <TooltipActionIcon
+            label="Go to previous page"
             variant="transparent"
             disabled={page === 1}
             onClick={() => gotoPage(page - 1)}
           >
             <IconChevronLeft />
-          </ActionIcon>
+          </TooltipActionIcon>
           <Text align="center" sx={{ flex: 1 }}>
             Page {page} of {pageCount}
           </Text>
-          <ActionIcon
+          <TooltipActionIcon
+            label="Go to next page"
             variant="transparent"
             disabled={page >= pageCount}
             onClick={() => gotoPage(page + 1)}
           >
             <IconChevronRight />
-          </ActionIcon>
-          <ActionIcon
+          </TooltipActionIcon>
+          <TooltipActionIcon
+            label="Go to last page"
             variant="transparent"
             disabled={page >= pageCount}
             onClick={() => gotoPage(pageCount)}
           >
             <IconChevronsRight />
-          </ActionIcon>
+          </TooltipActionIcon>
         </Box>
       ) : null}
     </Navbar>
