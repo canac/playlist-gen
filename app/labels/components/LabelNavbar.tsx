@@ -50,9 +50,12 @@ export default function LabelNavbar(): JSX.Element {
         <Box key={label.id} sx={buttonStyles}>
           <Link href={Routes.EditLabelPage({ page, labelId: label.id })}>
             <UnstyledButton component="a">
-              <Text weight="bold">
+              <Text>
                 <IconTag size={16} style={{ marginRight: "0.25em" }} />
-                {label.name} ({label.numTracks})
+                <Text component="span" weight="bold">
+                  {label.name}
+                </Text>{" "}
+                ({label.numTracks})
               </Text>
               {label.smartCriteria && (
                 <Text color="dimmed" size="sm">
