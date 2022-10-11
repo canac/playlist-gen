@@ -35,8 +35,13 @@ export default function SmartCriteriaInput(props: TextInputProps): JSX.Element {
       )}
       {result?.success && (
         <Text>
-          Smart criteria matches <strong>{result.data.matchCount}</strong> labels including{" "}
-          <em>{result.data.matchExamples.join(", ")}</em>
+          Smart criteria matches <strong>{result.data.matchCount}</strong> labels
+          {result.data.matchCount > 0 ? (
+            <>
+              {" "}
+              including <em>{result.data.matchExamples.join(", ")}</em>
+            </>
+          ) : null}
         </Text>
       )}
     </>
