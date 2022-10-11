@@ -37,6 +37,7 @@
     "@mantine/core": "5.4.2",
     "@mantine/form": "5.5.2",
     "@mantine/hooks": "5.4.2",
+    "@mantine/modals": "5.5.4",
     "@mantine/next": "5.5.0",
     "@mantine/ssr": "5.4.2",
     "@prisma/client": "4.0.0",

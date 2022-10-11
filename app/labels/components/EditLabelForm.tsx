@@ -2,6 +2,7 @@ import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation, useQuery } from "@blitzjs/rpc";
 import { Box, Button, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { openConfirmModal } from "@mantine/modals";
 import { IconTrash, IconX } from "@tabler/icons";
 import { useRouter } from "next/router";
 import deleteLabel from "../mutations/deleteLabel";
@@ -25,6 +26,23 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
   const form = useForm({
     initialValues: { name, smartCriteria: smartCriteria ?? "" },
   });
+
+  // Open the confirm delete dialog
+  // The returned promise resolves to false if the user clicked cancel, true if
+  // the user clicked confirm
+  function confirmDelete(): Promise<boolean> {
+    return new Promise((resolve) => {
+      openConfirmModal({
+        title: "Confirm Delete",
+        centered: true,
+        children: "Are you sure you want to delete this label?",
+        labels: { confirm: "Delete", cancel: "Cancel" },
+        confirmProps: { color: "red" },
+        onCancel: () => resolve(false),
+        onConfirm: () => resolve(true),
+      });
+    });
+  }
 
   // Leave the edit label form
   function close(): Promise<boolean> {
@@ -85,6 +103,10 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
         leftIcon={<IconTrash />}
         sx={{ width: "10em", alignSelf: "center" }}
         onClick={async () => {
+          if (!(await confirmDelete())) {
+            return;
+          }
+
           await deleteLabelMutation({ labelId });
           // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
           await invalidateQuery(getLabels, {});
