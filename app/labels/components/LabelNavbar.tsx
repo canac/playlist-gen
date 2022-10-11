@@ -32,7 +32,7 @@ export default function LabelNavbar(): JSX.Element {
   }
 
   return (
-    <Navbar width={{ base: 250 }} sx={{ display: "flex" }}>
+    <Navbar width={{ base: 250 }} sx={{ display: "flex", overflow: "scroll" }}>
       <LabelList labels={labels} />
       <Link href={Routes.NewLabelPage()}>
         <UnstyledButton
