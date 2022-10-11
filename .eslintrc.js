@@ -20,4 +20,5 @@ module.exports = {
       },
     ],
   },
+  ignorePatterns: ["app/lib/labelGrammar.ts"],
 };

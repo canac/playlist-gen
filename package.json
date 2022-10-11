@@ -10,7 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "prepare": "husky install",
-    "grammar-gen": "nearleyc labelGrammar.ne > app/lib/labelGrammar.ts"
+    "grammar-gen": "earley-bird compile labelGrammar.ne --outdir app/lib --outfile labelGrammar.ts"
   },
   "prisma": {
     "schema": "db/schema.prisma"
@@ -32,6 +32,7 @@
     "@blitzjs/auth": "2.0.0-beta.11",
     "@blitzjs/next": "2.0.0-beta.11",
     "@blitzjs/rpc": "2.0.0-beta.11",
+    "@canac/earley-bird": "0.0.4",
     "@emotion/react": "11.10.4",
     "@emotion/server": "11.10.0",
     "@mantine/core": "5.4.2",
@@ -43,14 +44,12 @@
     "@mantine/ssr": "5.4.2",
     "@prisma/client": "4.0.0",
     "@tabler/icons": "1.101.0",
-    "@types/nearley": "2.11.2",
     "blitz": "2.0.0-beta.11",
     "date-fns": "2.29.3",
     "final-form": "4.20.7",
     "lodash": "4.17.21",
     "loglevel": "1.8.0",
     "moo": "0.5.2",
-    "nearley": "2.20.1",
     "next": "12.2.5",
     "prisma": "4.0.0",
     "react": "18.2.0",
