@@ -3,6 +3,7 @@ import { Avatar, Box, Loader, MultiSelect, SelectItem, Text } from "@mantine/cor
 import { map } from "lodash";
 import { useState } from "react";
 import createLabel from "app/labels/mutations/createLabel";
+import setLabel from "app/labels/mutations/setLabel";
 import setLabels from "app/labels/mutations/setLabels";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/async";
@@ -14,10 +15,20 @@ export type TrackItemProps = {
     artists: Artist[];
     labels: Label[];
   };
+
+  // All available dumb labels
   labels: Label[];
+
+  // The id of the active quick apply label
+  quickLabelId: number | null;
 };
 
-export default function TrackItem({ labels: allLabels, track }: TrackItemProps): JSX.Element {
+export default function TrackItem({
+  labels: allLabels,
+  track,
+  quickLabelId,
+}: TrackItemProps): JSX.Element {
+  const [setLabelMutation] = useMutation(setLabel);
   const [setLabelsMutation, { isLoading: setLabelsLoading }] = useMutation(setLabels);
   const [createLabelMutation, { isLoading: createLabelLoading }] = useMutation(createLabel);
 
@@ -45,14 +56,44 @@ export default function TrackItem({ labels: allLabels, track }: TrackItemProps):
     });
   }
 
+  const hasQuickLabel = trackLabels.some((label) => label === quickLabelId?.toString());
+
   return (
     <Box
-      sx={{
-        padding: "0.75em 0.5em",
+      sx={(theme) => ({
+        padding: theme.spacing.sm,
+        borderRadius: theme.radius.sm,
         display: "flex",
         flexDirection: "row",
         gap: "1em",
         alignItems: "center",
+
+        "&:hover":
+          quickLabelId === null
+            ? undefined
+            : {
+                backgroundColor: hasQuickLabel ? theme.colors.red[1] : theme.colors.green[1],
+                cursor: "pointer",
+              },
+      })}
+      onClick={async () => {
+        if (quickLabelId === null) {
+          return;
+        }
+
+        if (hasQuickLabel) {
+          // Remove the quick label from the labels list
+          setTrackLabels(trackLabels.filter((labelId) => labelId !== quickLabelId.toString()));
+        } else {
+          // Add the quick label to the labels list
+          setTrackLabels([...trackLabels, quickLabelId.toString()]);
+        }
+
+        await setLabelMutation({
+          trackId: track.id,
+          labelId: quickLabelId,
+          operation: hasQuickLabel ? "remove" : "add",
+        });
       }}
     >
       <Avatar alt={`${track.name} album artwork`} src={track.album.thumbnailUrl} />

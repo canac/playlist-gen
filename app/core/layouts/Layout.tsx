@@ -63,6 +63,7 @@ const Layout: BlitzLayout<{
           <Header
             height={80}
             p="md"
+            withBorder={false}
             styles={(theme) => ({
               root: {
                 backgroundColor: theme.colors.blue[5],
