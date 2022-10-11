@@ -1,19 +1,20 @@
 import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
-import { Box, Select } from "@mantine/core";
+import { Box, Pagination, Select } from "@mantine/core";
 import { useRouter } from "next/router";
 import { Suspense, useState } from "react";
 import Layout from "app/core/layouts/Layout";
 import getLabels from "app/labels/queries/getLabels";
+import { handleAsyncErrors } from "app/lib/async";
 import TrackList from "app/tracks/components/TrackList";
 import getTracks from "app/tracks/queries/getTracks";
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 50;
 
 export const TracksList = () => {
   const router = useRouter();
-  const page = Number(router.query.page) || 0;
-  const [{ tracks, hasMore }] = usePaginatedQuery(getTracks, {
-    skip: ITEMS_PER_PAGE * page,
+  const page = Math.max(Number(router.query.page) || 1, 1);
+  const [{ tracks, count }] = usePaginatedQuery(getTracks, {
+    skip: ITEMS_PER_PAGE * (page - 1),
     take: ITEMS_PER_PAGE,
   });
   const [{ labels }] = useQuery(getLabels, {
@@ -22,8 +23,7 @@ export const TracksList = () => {
 
   const [quickLabel, setQuickLabel] = useState<number | null>(null);
 
-  const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
-  const goToNextPage = () => router.push({ query: { page: page + 1 } });
+  const pageCount = Math.ceil(count / ITEMS_PER_PAGE);
 
   return (
     <div>
@@ -51,13 +51,18 @@ export const TracksList = () => {
         />
       </Box>
       <TrackList tracks={tracks} labels={labels} quickLabel={quickLabel} />
-
-      <button disabled={page === 0} onClick={goToPreviousPage}>
-        Previous
-      </button>
-      <button disabled={!hasMore} onClick={goToNextPage}>
-        Next
-      </button>
+      {pageCount > 1 || page > 1 ? (
+        <Pagination
+          total={pageCount}
+          withEdges
+          position="center"
+          p="lg"
+          page={page}
+          onChange={(page) => {
+            handleAsyncErrors(router.push({ query: { page } }));
+          }}
+        />
+      ) : null}
     </div>
   );
 };
