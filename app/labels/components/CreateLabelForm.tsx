@@ -20,7 +20,7 @@ export default function CreateLabelForm(): JSX.Element {
 
   // Leave the create label form
   function close(): Promise<boolean> {
-    return router.push(Routes.LabelsPage());
+    return router.push(Routes.LabelsPage({ page: router.query.page }));
   }
 
   return (

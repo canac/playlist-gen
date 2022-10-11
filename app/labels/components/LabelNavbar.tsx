@@ -1,22 +1,35 @@
 import { Routes } from "@blitzjs/next";
 import { usePaginatedQuery } from "@blitzjs/rpc";
-import { Box, Navbar, Text, UnstyledButton } from "@mantine/core";
+import { Box, MantineTheme, Navbar, Text, UnstyledButton } from "@mantine/core";
 import {
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
   IconCirclePlus,
+  IconTag,
+  IconWand,
 } from "@tabler/icons";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
-import LabelList from "app/labels/components/LabelList";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/error";
 
 const ITEMS_PER_PAGE = 100;
+
+function buttonStyles(theme: MantineTheme) {
+  return {
+    padding: theme.spacing.xs,
+    borderRadius: theme.radius.sm,
+    width: "100%",
+
+    "&:hover": {
+      backgroundColor: theme.colors.gray[0],
+    },
+  };
+}
 
 export default function LabelNavbar(): JSX.Element {
   const router = useRouter();
@@ -28,25 +41,30 @@ export default function LabelNavbar(): JSX.Element {
   const pageCount = Math.ceil(count / ITEMS_PER_PAGE);
 
   function gotoPage(page: number) {
-    handleAsyncErrors(router.push({ query: { page } }));
+    handleAsyncErrors(router.push({ query: { ...router.query, page } }));
   }
 
   return (
     <Navbar width={{ base: 250 }} sx={{ display: "flex", overflow: "scroll" }}>
-      <LabelList labels={labels} />
-      <Link href={Routes.NewLabelPage()}>
-        <UnstyledButton
-          component="a"
-          sx={(theme) => ({
-            padding: theme.spacing.xs,
-            borderRadius: theme.radius.sm,
-            width: "100%",
-
-            "&:hover": {
-              backgroundColor: theme.colors.gray[0],
-            },
-          })}
-        >
+      {labels.map((label) => (
+        <Box key={label.id} sx={buttonStyles}>
+          <Link href={Routes.EditLabelPage({ page, labelId: label.id })}>
+            <UnstyledButton component="a">
+              <Text weight="bold">
+                <IconTag size={16} style={{ marginRight: "0.25em" }} />
+                {label.name} ({label.numTracks})
+              </Text>
+              {label.smartCriteria && (
+                <Text color="dimmed" size="sm">
+                  <IconWand size={12} style={{ marginRight: "0.25em" }} /> {label.smartCriteria}
+                </Text>
+              )}
+            </UnstyledButton>
+          </Link>
+        </Box>
+      ))}
+      <Link href={Routes.NewLabelPage({ page })}>
+        <UnstyledButton component="a" sx={buttonStyles}>
           <Text weight="bold" sx={{ display: "flex", alignItems: "center" }}>
             <IconCirclePlus size={16} style={{ marginRight: "0.25em" }} color="green" />
             Create label...

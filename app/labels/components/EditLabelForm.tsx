@@ -28,7 +28,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
 
   // Leave the edit label form
   function close(): Promise<boolean> {
-    return router.push(Routes.LabelsPage());
+    return router.push(Routes.LabelsPage({ page: router.query.page }));
   }
 
   return (
@@ -88,7 +88,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
           await deleteLabelMutation({ labelId });
           // Second parameter can be removed once https://github.com/blitz-js/blitz/issues/3725 is fixed
           await invalidateQuery(getLabels, {});
-          await router.push(Routes.LabelsPage());
+          await close();
         }}
       >
         {isSaving ? "Deleting..." : "Delete"}
