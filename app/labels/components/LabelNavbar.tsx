@@ -73,7 +73,7 @@ export default function LabelNavbar(): JSX.Element {
       </Link>
       <Box sx={{ flex: 1 }} />
 
-      {pageCount > 1 ? (
+      {pageCount > 1 || page > 1 ? (
         <Box sx={(theme) => ({ display: "flex", flexDirection: "row", padding: theme.spacing.xs })}>
           <TooltipActionIcon
             label="Go to first page"
@@ -91,7 +91,7 @@ export default function LabelNavbar(): JSX.Element {
           >
             <IconChevronLeft />
           </TooltipActionIcon>
-          <Text align="center" sx={{ flex: 1 }}>
+          <Text align="center" color={page > pageCount ? "red" : undefined} sx={{ flex: 1 }}>
             Page {page} of {pageCount}
           </Text>
           <TooltipActionIcon
