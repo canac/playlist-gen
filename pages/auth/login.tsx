@@ -6,7 +6,7 @@ import Layout from "app/core/layouts/Layout";
 import { env } from "app/lib/env";
 
 export const getServerSideProps = gSSP(async ({ req, ctx }) => {
-  const redirectUri = new URL(req.url ?? "", env.DOMAIN).searchParams.get("redirect") ?? "/";
+  const redirectUri = new URL(req.url ?? "", env.DOMAIN).searchParams.get("next") ?? "/";
 
   if (ctx.session.$isAuthorized()) {
     // Redirect to the home page if the user is already logged in

@@ -2,24 +2,7 @@ import { BlitzPage, Routes } from "@blitzjs/next";
 import { Box, Text, Title } from "@mantine/core";
 import { IconCloudDownload, IconCloudUpload } from "@tabler/icons";
 import Link from "next/link";
-import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
-
-export const getServerSideProps = gSSP(async ({ ctx }) => {
-  // Redirect to the login page if the user isn't logged in
-  if (!ctx.session.$isAuthorized()) {
-    return {
-      redirect: {
-        destination: "/auth/login",
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
-});
 
 const Home: BlitzPage = () => {
   return (
@@ -42,5 +25,7 @@ const Home: BlitzPage = () => {
     </Layout>
   );
 };
+
+Home.authenticate = { redirectTo: Routes.LoginPage() };
 
 export default Home;

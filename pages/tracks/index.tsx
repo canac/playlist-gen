@@ -1,3 +1,4 @@
+import { BlitzPage } from "@blitzjs/next";
 import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
 import { Box, Pagination, Select } from "@mantine/core";
 import { useRouter } from "next/router";
@@ -67,14 +68,14 @@ export const TracksList = () => {
   );
 };
 
-const TracksPage = () => {
+const TracksPage: BlitzPage = () => {
   return (
-    <Layout title="Tracks">
-      <Suspense fallback={<div>Loading...</div>}>
-        <TracksList />
-      </Suspense>
-    </Layout>
+    <Suspense fallback={<div>Loading...</div>}>
+      <TracksList />
+    </Suspense>
   );
 };
+
+TracksPage.getLayout = (page) => <Layout title="Tracks">{page}</Layout>;
 
 export default TracksPage;

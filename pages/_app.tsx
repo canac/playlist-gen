@@ -1,15 +1,32 @@
-import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps } from "@blitzjs/next";
-import { MantineProvider } from "@mantine/core";
+import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps, Routes } from "@blitzjs/next";
+import { Box, MantineProvider, Text, Title } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import { AuthenticationError, AuthorizationError } from "blitz";
+import Link from "next/link";
 import { Suspense } from "react";
 import { withBlitz } from "app/blitz-client";
 import { emotionCache } from "app/emotion-cache";
 
 function RootErrorFallback({ error }: ErrorFallbackProps) {
   if (error instanceof AuthenticationError) {
-    return <div>Error: You are not authenticated</div>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          gap: "0.5em",
+        }}
+      >
+        <Title order={1}>Authentication Error</Title>
+        <Text>
+          You are not authenticated. Try <Link href={Routes.LoginPage()}>logging in</Link>.
+        </Text>
+      </Box>
+    );
   } else if (error instanceof AuthorizationError) {
     return (
       <ErrorComponent

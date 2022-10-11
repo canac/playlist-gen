@@ -160,6 +160,6 @@ const Layout: BlitzLayout<{
   );
 };
 
-Layout.authenticate = true;
+Layout.authenticate = { redirectTo: Routes.LoginPage() };
 
 export default Layout;
