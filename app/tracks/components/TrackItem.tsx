@@ -5,7 +5,7 @@ import { useState } from "react";
 import createLabel from "app/labels/mutations/createLabel";
 import setLabels from "app/labels/mutations/setLabels";
 import getLabels from "app/labels/queries/getLabels";
-import { handleAsyncErrors } from "app/lib/error";
+import { handleAsyncErrors } from "app/lib/async";
 import { Album, Artist, Label, Track } from "db";
 
 export type TrackItemProps = {

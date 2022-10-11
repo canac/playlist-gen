@@ -11,7 +11,7 @@ import getLabel from "../queries/getLabel";
 import getLabels from "../queries/getLabels";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
-import { handleAsyncErrors } from "app/lib/error";
+import { handleAsyncErrors } from "app/lib/async";
 
 export type EditLabelProps = {
   labelId: number;

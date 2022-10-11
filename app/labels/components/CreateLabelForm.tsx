@@ -8,7 +8,7 @@ import createLabel from "../mutations/createLabel";
 import getLabels from "../queries/getLabels";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
-import { handleAsyncErrors } from "app/lib/error";
+import { handleAsyncErrors } from "app/lib/async";
 
 export default function CreateLabelForm(): JSX.Element {
   const router = useRouter();

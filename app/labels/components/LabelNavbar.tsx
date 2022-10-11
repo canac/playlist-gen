@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import getLabels from "app/labels/queries/getLabels";
-import { handleAsyncErrors } from "app/lib/error";
+import { handleAsyncErrors } from "app/lib/async";
 
 const ITEMS_PER_PAGE = 100;
 
