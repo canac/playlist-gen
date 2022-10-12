@@ -73,6 +73,7 @@ const lexer = moo.compile({
   addedKw: 'added',
   releasedKw: 'released',
 
+  nameKw: 'name:',
   labelKw: 'label:',
   albumKw: 'album:',
   artistKw: 'artist:',
@@ -102,6 +103,7 @@ released -> %releasedKw %comparison absoluteDate {% ([_, operator, date]): Track
 value -> %cleanKw {% (_): TrackWhereInput => ({ explicit: false }) %}
        | %explicitKw {% (_): TrackWhereInput => ({ explicit: true }) %}
        | %unlabeledKw {% (_): TrackWhereInput => ({ labels: { none: {} } }) %}
+       | %nameKw %quotedString {% ([_, name]): TrackWhereInput => ({ name: { contains: name.value, mode: 'insensitive' } }) %}
        | %labelKw %quotedString {% ([_, name]): TrackWhereInput => ({ labels: { some: { name: name.value } } }) %}
        | %albumKw %quotedString {% ([_, name]: [unknown, string]): TrackWhereInput => ({ album: { name: name.value } }) %}
        | %artistKw %quotedString {% ([_, name]: [unknown, string]): TrackWhereInput => ({ artists: { some: { name: name.value } } }) %}

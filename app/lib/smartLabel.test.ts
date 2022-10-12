@@ -15,6 +15,14 @@ describe("validateSmartCriteria", () => {
 
   const names = ["Name", "Name with space", "&&:||:()"];
 
+  describe("supports name", () => {
+    names.forEach((name) => {
+      expect(generatePrismaFilter(`name:"${name}"`)).toEqual({
+        name: { contains: name, mode: "insensitive" },
+      });
+    });
+  });
+
   describe("supports label", () => {
     names.forEach((name) => {
       expect(generatePrismaFilter(`label:"${name}"`)).toEqual({ labels: { some: { name } } });

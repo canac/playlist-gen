@@ -92,6 +92,7 @@ const lexer = moo.compile({
   addedKw: "added",
   releasedKw: "released",
 
+  nameKw: "name:",
   labelKw: "label:",
   albumKw: "album:",
   artistKw: "artist:",
@@ -161,7 +162,11 @@ const grammar = new Grammar(
         new RuleSymbol("relativeDate"),
       ],
       postprocess: ([_, operator, date]): TrackWhereInput => ({
-        dateAdded: makeRelativeComparison(operator.value, date.amount, date.unit),
+        dateAdded: makeRelativeComparison(
+          operator.value,
+          date.amount,
+          date.unit
+        ),
       }),
     },
     {
@@ -173,7 +178,11 @@ const grammar = new Grammar(
       ],
       postprocess: ([_, operator, date]): TrackWhereInput => ({
         album: {
-          dateReleased: makeAbsoluteComparison(operator.value, date.date, date.unit),
+          dateReleased: makeAbsoluteComparison(
+            operator.value,
+            date.date,
+            date.unit
+          ),
         },
       }),
     },
@@ -186,7 +195,11 @@ const grammar = new Grammar(
       ],
       postprocess: ([_, operator, date]): TrackWhereInput => ({
         album: {
-          dateReleased: makeRelativeComparison(operator.value, date.amount, date.unit),
+          dateReleased: makeRelativeComparison(
+            operator.value,
+            date.amount,
+            date.unit
+          ),
         },
       }),
     },
@@ -204,6 +217,13 @@ const grammar = new Grammar(
       name: "value",
       symbols: [new TokenSymbol("unlabeledKw")],
       postprocess: (_): TrackWhereInput => ({ labels: { none: {} } }),
+    },
+    {
+      name: "value",
+      symbols: [new TokenSymbol("nameKw"), new TokenSymbol("quotedString")],
+      postprocess: ([_, name]): TrackWhereInput => ({
+        name: { contains: name.value, mode: "insensitive" },
+      }),
     },
     {
       name: "value",
@@ -238,7 +258,11 @@ const grammar = new Grammar(
     },
     {
       name: "parentheses",
-      symbols: [new TokenSymbol("lparen"), new RuleSymbol("binary"), new TokenSymbol("rparen")],
+      symbols: [
+        new TokenSymbol("lparen"),
+        new RuleSymbol("binary"),
+        new TokenSymbol("rparen"),
+      ],
       postprocess: ([_, inner]) => inner,
     },
     {
@@ -272,7 +296,7 @@ const grammar = new Grammar(
         unknown,
         unknown,
         unknown,
-        TrackWhereInput,
+        TrackWhereInput
       ]): TrackWhereInput => ({ AND: [lhs, rhs] }),
     },
     {
@@ -289,7 +313,7 @@ const grammar = new Grammar(
         unknown,
         unknown,
         unknown,
-        TrackWhereInput,
+        TrackWhereInput
       ]): TrackWhereInput => ({ OR: [lhs, rhs] }),
     },
     {
@@ -299,7 +323,7 @@ const grammar = new Grammar(
     },
     { name: "ws", symbols: [new TokenSymbol("ws")], postprocess: undefined },
   ],
-  "main",
+  "main"
 );
 
 const parser = new Parser(grammar, lexer);

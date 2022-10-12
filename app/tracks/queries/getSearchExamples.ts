@@ -23,6 +23,7 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
     include: { album: true, artists: true },
   });
   const [labels, tracks] = await Promise.all([labelsPromise, tracksPromise]);
+  const trackNames = uniq(tracks.map((track) => track.name));
   const albumNames = uniq(tracks.map((track) => track.album.name));
   const artistNames = uniq(tracks.flatMap((track) => track.artists.map((artist) => artist.name)));
 
@@ -61,6 +62,10 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
     ...labels.map((label) => ({
       value: `label:"${label.name}"`,
       description: `Has label "${label.name}"`,
+    })),
+    ...trackNames.map((name) => ({
+      value: `name:"${name}"`,
+      description: `Name includes "${name}"`,
     })),
     ...albumNames.map((name) => ({
       value: `album:"${name}"`,
