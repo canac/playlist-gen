@@ -1,5 +1,5 @@
 import { resolver } from "@blitzjs/rpc";
-import { uniq } from "lodash";
+import { sortBy, uniq } from "lodash";
 import db from "db";
 
 type SearchExample = {
@@ -23,9 +23,11 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
     include: { album: true, artists: true },
   });
   const [labels, tracks] = await Promise.all([labelsPromise, tracksPromise]);
-  const trackNames = uniq(tracks.map((track) => track.name));
-  const albumNames = uniq(tracks.map((track) => track.album.name));
-  const artistNames = uniq(tracks.flatMap((track) => track.artists.map((artist) => artist.name)));
+  const trackNames = sortBy(uniq(tracks.map((track) => track.name)));
+  const albumNames = sortBy(uniq(tracks.map((track) => track.album.name)));
+  const artistNames = sortBy(
+    uniq(tracks.flatMap((track) => track.artists.map((artist) => artist.name))),
+  );
 
   const examples: SearchExample[] = [
     { value: "clean", description: "Clean" },
