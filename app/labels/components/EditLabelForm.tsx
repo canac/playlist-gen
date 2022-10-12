@@ -62,7 +62,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
                 smartCriteria: smartCriteria === null ? undefined : values.smartCriteria,
               },
             });
-            await invalidateQuery(getLabels);
+            await Promise.all([invalidateQuery(getLabels), invalidateQuery(getLabel, { labelId })]);
             await close();
           })(),
         );
