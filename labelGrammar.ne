@@ -93,20 +93,20 @@ const lexer = moo.compile({
 @lexer lexer
 
 main -> binary {% id %}
-relativeDate -> %number %dateUnit {% ([amount, unit]) => ({ amount: amount.value, unit: unit.value }) %}
-absoluteDate -> %number {% ([year]) => ({ unit: 'y', date: new Date(year.value, 0, 1) }) %}
-              | %number %dash %number %dash %number {% ([month, _a, day, _b, year]) => ({ unit: 'd', date: new Date(year.value, month.value - 1, day.value) }) %}
-added -> %addedKw %comparison absoluteDate {% ([_, operator, date]): TrackWhereInput => ({ dateAdded: makeAbsoluteComparison(operator.value, date.date, date.unit) }) %}
-       | %addedKw %comparison relativeDate {% ([_, operator, date]): TrackWhereInput => ({ dateAdded: makeRelativeComparison(operator.value, date.amount, date.unit)}) %}
-released -> %releasedKw %comparison absoluteDate {% ([_, operator, date]): TrackWhereInput => ({ album: { dateReleased: makeAbsoluteComparison(operator.value, date.date, date.unit) } }) %}
-          | %releasedKw %comparison relativeDate {% ([_, operator, date]): TrackWhereInput => ({ album: { dateReleased: makeRelativeComparison(operator.value, date.amount, date.unit) } }) %}
+relativeDate -> %number %dateUnit {% ([amount, unit]: [{ value: number }, { value: Unit }]) => ({ amount: amount.value, unit: unit.value }) %}
+absoluteDate -> %number {% ([year]: [{ value: number }]) => ({ unit: 'y', date: new Date(year.value, 0, 1) }) %}
+              | %number %dash %number %dash %number {% ([month, _a, day, _b, year]: [{ value: number }, unknown, { value: number }, unknown, { value: number }]) => ({ unit: 'd', date: new Date(year.value, month.value - 1, day.value) }) %}
+added -> %addedKw %comparison absoluteDate {% ([_, operator, date]: [unknown, { value: string }, { date: Date, unit: Unit }]): TrackWhereInput => ({ dateAdded: makeAbsoluteComparison(operator.value, date.date, date.unit) }) %}
+       | %addedKw %comparison relativeDate {% ([_, operator, date]: [unknown, { value: string }, { amount: number, unit: Unit }]): TrackWhereInput => ({ dateAdded: makeRelativeComparison(operator.value, date.amount, date.unit)}) %}
+released -> %releasedKw %comparison absoluteDate {% ([_, operator, date]: [unknown, { value: string }, { date: Date, unit: Unit }]): TrackWhereInput => ({ album: { dateReleased: makeAbsoluteComparison(operator.value, date.date, date.unit) } }) %}
+          | %releasedKw %comparison relativeDate {% ([_, operator, date]: [unknown, { value: string }, { amount: number, unit: Unit }]): TrackWhereInput => ({ album: { dateReleased: makeRelativeComparison(operator.value, date.amount, date.unit) } }) %}
 value -> %cleanKw {% (_): TrackWhereInput => ({ explicit: false }) %}
        | %explicitKw {% (_): TrackWhereInput => ({ explicit: true }) %}
        | %unlabeledKw {% (_): TrackWhereInput => ({ labels: { none: {} } }) %}
-       | %nameKw %quotedString {% ([_, name]): TrackWhereInput => ({ name: { contains: name.value, mode: 'insensitive' } }) %}
-       | %labelKw %quotedString {% ([_, name]): TrackWhereInput => ({ labels: { some: { name: name.value } } }) %}
-       | %albumKw %quotedString {% ([_, name]: [unknown, string]): TrackWhereInput => ({ album: { name: name.value } }) %}
-       | %artistKw %quotedString {% ([_, name]: [unknown, string]): TrackWhereInput => ({ artists: { some: { name: name.value } } }) %}
+       | %nameKw %quotedString {% ([_, name]: [unknown, { value: string }]): TrackWhereInput => ({ name: { contains: name.value, mode: 'insensitive' } }) %}
+       | %labelKw %quotedString {% ([_, name]: [unknown, { value: string }]): TrackWhereInput => ({ labels: { some: { name: name.value } } }) %}
+       | %albumKw %quotedString {% ([_, name]: [unknown, { value: string }]): TrackWhereInput => ({ album: { name: name.value } }) %}
+       | %artistKw %quotedString {% ([_, name]: [unknown, { value: string }]): TrackWhereInput => ({ artists: { some: { name: name.value } } }) %}
        | added {% id %}
        | released {% id %}
 parentheses -> %lparen binary %rparen {% ([_, inner]) => inner %}

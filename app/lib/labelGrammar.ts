@@ -116,7 +116,7 @@ const grammar = new Grammar(
     {
       name: "relativeDate",
       symbols: [new TokenSymbol("number"), new TokenSymbol("dateUnit")],
-      postprocess: ([amount, unit]) => ({
+      postprocess: ([amount, unit]: [{ value: number }, { value: Unit }]) => ({
         amount: amount.value,
         unit: unit.value,
       }),
@@ -124,7 +124,7 @@ const grammar = new Grammar(
     {
       name: "absoluteDate",
       symbols: [new TokenSymbol("number")],
-      postprocess: ([year]) => ({
+      postprocess: ([year]: [{ value: number }]) => ({
         unit: "y",
         date: new Date(year.value, 0, 1),
       }),
@@ -138,7 +138,13 @@ const grammar = new Grammar(
         new TokenSymbol("dash"),
         new TokenSymbol("number"),
       ],
-      postprocess: ([month, _a, day, _b, year]) => ({
+      postprocess: ([month, _a, day, _b, year]: [
+        { value: number },
+        unknown,
+        { value: number },
+        unknown,
+        { value: number }
+      ]) => ({
         unit: "d",
         date: new Date(year.value, month.value - 1, day.value),
       }),
@@ -150,7 +156,11 @@ const grammar = new Grammar(
         new TokenSymbol("comparison"),
         new RuleSymbol("absoluteDate"),
       ],
-      postprocess: ([_, operator, date]): TrackWhereInput => ({
+      postprocess: ([_, operator, date]: [
+        unknown,
+        { value: string },
+        { date: Date, unit: Unit }
+      ]): TrackWhereInput => ({
         dateAdded: makeAbsoluteComparison(operator.value, date.date, date.unit),
       }),
     },
@@ -161,7 +171,11 @@ const grammar = new Grammar(
         new TokenSymbol("comparison"),
         new RuleSymbol("relativeDate"),
       ],
-      postprocess: ([_, operator, date]): TrackWhereInput => ({
+      postprocess: ([_, operator, date]: [
+        unknown,
+        { value: string },
+        { amount: number, unit: Unit }
+      ]): TrackWhereInput => ({
         dateAdded: makeRelativeComparison(
           operator.value,
           date.amount,
@@ -176,7 +190,11 @@ const grammar = new Grammar(
         new TokenSymbol("comparison"),
         new RuleSymbol("absoluteDate"),
       ],
-      postprocess: ([_, operator, date]): TrackWhereInput => ({
+      postprocess: ([_, operator, date]: [
+        unknown,
+        { value: string },
+        { date: Date, unit: Unit }
+      ]): TrackWhereInput => ({
         album: {
           dateReleased: makeAbsoluteComparison(
             operator.value,
@@ -193,7 +211,11 @@ const grammar = new Grammar(
         new TokenSymbol("comparison"),
         new RuleSymbol("relativeDate"),
       ],
-      postprocess: ([_, operator, date]): TrackWhereInput => ({
+      postprocess: ([_, operator, date]: [
+        unknown,
+        { value: string },
+        { amount: number, unit: Unit }
+      ]): TrackWhereInput => ({
         album: {
           dateReleased: makeRelativeComparison(
             operator.value,
@@ -221,30 +243,36 @@ const grammar = new Grammar(
     {
       name: "value",
       symbols: [new TokenSymbol("nameKw"), new TokenSymbol("quotedString")],
-      postprocess: ([_, name]): TrackWhereInput => ({
+      postprocess: ([_, name]: [
+        unknown,
+        { value: string }
+      ]): TrackWhereInput => ({
         name: { contains: name.value, mode: "insensitive" },
       }),
     },
     {
       name: "value",
       symbols: [new TokenSymbol("labelKw"), new TokenSymbol("quotedString")],
-      postprocess: ([_, name]): TrackWhereInput => ({
-        labels: { some: { name: name.value } },
-      }),
+      postprocess: ([_, name]: [
+        unknown,
+        { value: string }
+      ]): TrackWhereInput => ({ labels: { some: { name: name.value } } }),
     },
     {
       name: "value",
       symbols: [new TokenSymbol("albumKw"), new TokenSymbol("quotedString")],
-      postprocess: ([_, name]: [unknown, string]): TrackWhereInput => ({
-        album: { name: name.value },
-      }),
+      postprocess: ([_, name]: [
+        unknown,
+        { value: string }
+      ]): TrackWhereInput => ({ album: { name: name.value } }),
     },
     {
       name: "value",
       symbols: [new TokenSymbol("artistKw"), new TokenSymbol("quotedString")],
-      postprocess: ([_, name]: [unknown, string]): TrackWhereInput => ({
-        artists: { some: { name: name.value } },
-      }),
+      postprocess: ([_, name]: [
+        unknown,
+        { value: string }
+      ]): TrackWhereInput => ({ artists: { some: { name: name.value } } }),
     },
     {
       name: "value",
