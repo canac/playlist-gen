@@ -67,7 +67,7 @@ export const TracksList = () => {
           rightSection={<IconSearch />}
           data={searchOptions}
           limit={10}
-          defaultValue={search}
+          value={search}
           error={result.error?.message}
           onChange={setSearch}
           styles={(theme) => ({
