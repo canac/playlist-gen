@@ -1,11 +1,11 @@
 // Expose higher-level methods for interacting with the Spotify API
 
-import { chunk, differenceBy, map, pick, uniqBy } from "lodash";
+import { chunk, difference, differenceBy, map, pick, uniq, uniqBy } from "lodash";
 import log from "loglevel";
 import { z } from "zod";
 import { env } from "../lib/env";
 import { generatePrismaFilter } from "../lib/smartLabel";
-import db, { Prisma, User } from "db";
+import db, { Artist, Prisma, User } from "db";
 
 // POST https://accounts.spotify.com/api/token
 // Only includes fields that we care about
@@ -99,7 +99,6 @@ const TracksResponse = z.object({
         artists: z.array(
           z.object({
             id: z.string(),
-            name: z.string(),
           }),
         ),
         explicit: z.boolean(),
@@ -109,6 +108,40 @@ const TracksResponse = z.object({
     }),
   ),
 });
+
+// GET https://api.spotify.com/v1/artists
+// Only includes fields that we care about
+const ArtistsResponse = z.object({
+  artists: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      genres: z.array(z.string()),
+    }),
+  ),
+});
+
+type SpotifyArtist = Pick<Artist, "id" | "name" | "genres">;
+
+// Load the name and genre of artists from Spotify
+async function lookupArtists(user: User, artistIds: string[]): Promise<SpotifyArtist[]> {
+  const artistGenres: SpotifyArtist[] = [];
+
+  // Load the artists' information 50 at a time
+  for (const chunkIds of chunk(artistIds, 50)) {
+    const { artists } = ArtistsResponse.parse(
+      await spotifyFetch(
+        user,
+        new Request(
+          `https://api.spotify.com/v1/artists?ids=${encodeURIComponent(chunkIds.join(","))}`,
+        ),
+      ),
+    );
+    artistGenres.push(...artists);
+  }
+
+  return artistGenres;
+}
 
 // Pull the user's favorite tracks from Spotify into the database
 export async function syncFavoriteTracks(user: User): Promise<void> {
@@ -145,12 +178,18 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
     });
 
     // Create the artists that the tracks reference
+    const trackArtistIds = uniq(tracks.items.flatMap((item) => map(item.track.artists, "id")));
+    const existingArtistIds = map(
+      await db.artist.findMany({
+        where: { id: { in: trackArtistIds } },
+        select: { id: true },
+      }),
+      "id",
+    );
+    const newArtistIds = difference(trackArtistIds, existingArtistIds);
+    const newArtists = await lookupArtists(user, newArtistIds);
     const artistsPromise = db.artist.createMany({
-      data: uniqBy(
-        tracks.items.flatMap(({ track: { artists } }) => artists),
-        "id",
-      ),
-      skipDuplicates: true,
+      data: newArtists,
     });
 
     // Create albums and artists in parallel
