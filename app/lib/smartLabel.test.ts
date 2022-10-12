@@ -1,5 +1,7 @@
 import { generatePrismaFilter } from "./smartLabel";
 
+jest.useFakeTimers().setSystemTime(new Date(2022, 3, 1));
+
 describe("validateSmartCriteria", () => {
   describe("supports clean", () => {
     expect(generatePrismaFilter("clean")).toEqual({ explicit: false });
@@ -41,40 +43,274 @@ describe("validateSmartCriteria", () => {
     });
   });
 
-  const comparisonOperators = ["<=", ">=", "<", ">", "="];
-
   describe("added", () => {
     it("supports relative dates", () => {
-      comparisonOperators.forEach((operator) => {
-        expect(generatePrismaFilter(`added${operator}1d`)).not.toBe(null);
-        expect(generatePrismaFilter(`added${operator}5m`)).not.toBe(null);
-        expect(generatePrismaFilter(`added${operator}10y`)).not.toBe(null);
+      expect(generatePrismaFilter("added=1d")).toEqual({
+        dateAdded: {
+          gt: new Date(2022, 2, 31),
+          lt: new Date(2022, 3, 2),
+        },
+      });
+      expect(generatePrismaFilter("added=3m")).toEqual({
+        dateAdded: {
+          gt: new Date(2021, 12, 1),
+          lt: new Date(2022, 6, 1),
+        },
+      });
+      expect(generatePrismaFilter("added=5y")).toEqual({
+        dateAdded: {
+          gt: new Date(2017, 3, 1),
+          lt: new Date(2027, 3, 1),
+        },
+      });
+
+      expect(generatePrismaFilter("added<1d")).toEqual({
+        dateAdded: {
+          gt: new Date(2022, 2, 31),
+        },
+      });
+      expect(generatePrismaFilter("added<3m")).toEqual({
+        dateAdded: {
+          gt: new Date(2021, 12, 1),
+        },
+      });
+      expect(generatePrismaFilter("added<5y")).toEqual({
+        dateAdded: {
+          gt: new Date(2017, 3, 1),
+        },
+      });
+
+      expect(generatePrismaFilter("added<=1d")).toEqual({
+        dateAdded: {
+          gte: new Date(2022, 2, 31),
+        },
+      });
+      expect(generatePrismaFilter("added<=3m")).toEqual({
+        dateAdded: {
+          gte: new Date(2021, 12, 1),
+        },
+      });
+      expect(generatePrismaFilter("added<=5y")).toEqual({
+        dateAdded: {
+          gte: new Date(2017, 3, 1),
+        },
+      });
+
+      expect(generatePrismaFilter("added>1d")).toEqual({
+        dateAdded: {
+          lt: new Date(2022, 2, 31),
+        },
+      });
+      expect(generatePrismaFilter("added>3m")).toEqual({
+        dateAdded: {
+          lt: new Date(2021, 12, 1),
+        },
+      });
+      expect(generatePrismaFilter("added>5y")).toEqual({
+        dateAdded: {
+          lt: new Date(2017, 3, 1),
+        },
+      });
+
+      expect(generatePrismaFilter("added>=1d")).toEqual({
+        dateAdded: {
+          lte: new Date(2022, 2, 31),
+        },
+      });
+      expect(generatePrismaFilter("added>=3m")).toEqual({
+        dateAdded: {
+          lte: new Date(2021, 12, 1),
+        },
+      });
+      expect(generatePrismaFilter("added>=5y")).toEqual({
+        dateAdded: {
+          lte: new Date(2017, 3, 1),
+        },
       });
     });
 
     it("supports absolute dates", () => {
-      comparisonOperators.forEach((operator) => {
-        expect(generatePrismaFilter(`added${operator}2020`)).not.toBe(null);
-        expect(generatePrismaFilter(`added${operator}1-1-2020`)).not.toBe(null);
-        expect(generatePrismaFilter(`added${operator}11-11-2020`)).not.toBe(null);
+      expect(generatePrismaFilter("added=4-1-2022")).toEqual({
+        dateAdded: {
+          gte: new Date(2022, 3, 1),
+          lt: new Date(2022, 3, 2),
+        },
+      });
+      expect(generatePrismaFilter("added<4-1-2022")).toEqual({
+        dateAdded: {
+          lt: new Date(2022, 3, 1),
+        },
+      });
+      expect(generatePrismaFilter("added<=4-1-2022")).toEqual({
+        dateAdded: {
+          lt: new Date(2022, 3, 2),
+        },
+      });
+      expect(generatePrismaFilter("added>4-1-2022")).toEqual({
+        dateAdded: {
+          gte: new Date(2022, 3, 2),
+        },
+      });
+      expect(generatePrismaFilter("added>=4-1-2022")).toEqual({
+        dateAdded: {
+          gte: new Date(2022, 3, 1),
+        },
       });
     });
   });
 
   describe("released", () => {
-    it("supports relative date", () => {
-      comparisonOperators.forEach((operator) => {
-        expect(generatePrismaFilter(`released${operator}1d`)).not.toBe(null);
-        expect(generatePrismaFilter(`released${operator}5m`)).not.toBe(null);
-        expect(generatePrismaFilter(`released${operator}10y`)).not.toBe(null);
+    it("supports relative dates", () => {
+      expect(generatePrismaFilter("released=1d")).toEqual({
+        album: {
+          dateReleased: {
+            gt: new Date(2022, 2, 31),
+            lt: new Date(2022, 3, 2),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released=3m")).toEqual({
+        album: {
+          dateReleased: {
+            gt: new Date(2021, 12, 1),
+            lt: new Date(2022, 6, 1),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released=5y")).toEqual({
+        album: {
+          dateReleased: {
+            gt: new Date(2017, 3, 1),
+            lt: new Date(2027, 3, 1),
+          },
+        },
+      });
+
+      expect(generatePrismaFilter("released<1d")).toEqual({
+        album: {
+          dateReleased: {
+            gt: new Date(2022, 2, 31),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released<3m")).toEqual({
+        album: {
+          dateReleased: {
+            gt: new Date(2021, 12, 1),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released<5y")).toEqual({
+        album: {
+          dateReleased: {
+            gt: new Date(2017, 3, 1),
+          },
+        },
+      });
+
+      expect(generatePrismaFilter("released<=1d")).toEqual({
+        album: {
+          dateReleased: {
+            gte: new Date(2022, 2, 31),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released<=3m")).toEqual({
+        album: {
+          dateReleased: {
+            gte: new Date(2021, 12, 1),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released<=5y")).toEqual({
+        album: {
+          dateReleased: {
+            gte: new Date(2017, 3, 1),
+          },
+        },
+      });
+
+      expect(generatePrismaFilter("released>1d")).toEqual({
+        album: {
+          dateReleased: {
+            lt: new Date(2022, 2, 31),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released>3m")).toEqual({
+        album: {
+          dateReleased: {
+            lt: new Date(2021, 12, 1),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released>5y")).toEqual({
+        album: {
+          dateReleased: {
+            lt: new Date(2017, 3, 1),
+          },
+        },
+      });
+
+      expect(generatePrismaFilter("released>=1d")).toEqual({
+        album: {
+          dateReleased: {
+            lte: new Date(2022, 2, 31),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released>=3m")).toEqual({
+        album: {
+          dateReleased: {
+            lte: new Date(2021, 12, 1),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released>=5y")).toEqual({
+        album: {
+          dateReleased: {
+            lte: new Date(2017, 3, 1),
+          },
+        },
       });
     });
 
     it("supports absolute dates", () => {
-      comparisonOperators.forEach((operator) => {
-        expect(generatePrismaFilter(`released${operator}2020`)).not.toBe(null);
-        expect(generatePrismaFilter(`released${operator}1-1-2020`)).not.toBe(null);
-        expect(generatePrismaFilter(`released${operator}11-11-2020`)).not.toBe(null);
+      expect(generatePrismaFilter("released=4-1-2022")).toEqual({
+        album: {
+          dateReleased: {
+            gte: new Date(2022, 3, 1),
+            lt: new Date(2022, 3, 2),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released<4-1-2022")).toEqual({
+        album: {
+          dateReleased: {
+            lt: new Date(2022, 3, 1),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released<=4-1-2022")).toEqual({
+        album: {
+          dateReleased: {
+            lt: new Date(2022, 3, 2),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released>4-1-2022")).toEqual({
+        album: {
+          dateReleased: {
+            gte: new Date(2022, 3, 2),
+          },
+        },
+      });
+      expect(generatePrismaFilter("released>=4-1-2022")).toEqual({
+        album: {
+          dateReleased: {
+            gte: new Date(2022, 3, 1),
+          },
+        },
       });
     });
   });

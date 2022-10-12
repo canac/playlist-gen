@@ -66,7 +66,7 @@ function makeRelativeComparison(
   const addFunc = addFuncs[unit];
   const now = new Date();
   if (operator === "=") {
-    return { gt: addFunc(now, -amount - 1), lt: addFunc(now, -amount + 1) };
+    return { gt: addFunc(now, -amount), lt: addFunc(now, amount) };
   } else if (operator === "<") {
     return { gt: addFunc(now, -amount) };
   } else if (operator === "<=") {
