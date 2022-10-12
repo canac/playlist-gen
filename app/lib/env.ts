@@ -2,7 +2,6 @@ import { z } from "zod";
 import { nonEmptyString } from "./zodTypes";
 
 const envSchema = z.object({
-  PORT: nonEmptyString,
   DOMAIN: nonEmptyString,
   DATABASE_URL: nonEmptyString,
   SPOTIFY_CLIENT_ID: nonEmptyString,
