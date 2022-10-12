@@ -1,9 +1,11 @@
 import { resolver } from "@blitzjs/rpc";
 import { paginate } from "blitz";
 import { z } from "zod";
+import { generatePrismaFilter } from "app/lib/smartLabel";
 import db from "db";
 
 const GetTracks = z.object({
+  search: z.string().optional(),
   skip: z.number().nonnegative().optional(),
   take: z.number().nonnegative().optional(),
 });
@@ -11,16 +13,21 @@ const GetTracks = z.object({
 export default resolver.pipe(
   resolver.zod(GetTracks),
   resolver.authorize(),
-  async ({ skip = 0, take = 25 }, ctx) => {
+  async ({ search, skip = 0, take = 25 }, ctx) => {
     const userId = ctx.session.userId;
 
-    const where = { userId };
-    const {
-      items: tracks,
-      hasMore,
-      nextPage,
-      count,
-    } = await paginate({
+    const searchWhere = search ? generatePrismaFilter(search) : {};
+    if (searchWhere === null) {
+      return {
+        success: false as const,
+        error: {
+          message: "Invalid search query",
+        },
+      };
+    }
+
+    const where = { userId, ...searchWhere };
+    const { items: tracks, count } = await paginate({
       skip,
       take,
       count: () => db.track.count({ where }),
@@ -39,10 +46,11 @@ export default resolver.pipe(
     });
 
     return {
-      tracks,
-      nextPage,
-      hasMore,
-      count,
+      success: true as const,
+      data: {
+        tracks,
+        count,
+      },
     };
   },
 );
