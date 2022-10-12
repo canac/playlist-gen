@@ -134,7 +134,9 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
         tracks.items.map(({ track: { album } }) => ({
           id: album.id,
           name: album.name,
-          thumbnailUrl: album.images[0]?.url ?? "https://fakeimg.pl/150/ffffff/?text=+",
+          thumbnailUrl:
+            album.images[0]?.url ??
+            `https://via.placeholder.com/640.jpg?text=${encodeURIComponent(album.name)}`,
           dateReleased: new Date(album.release_date),
         })),
         "id",
