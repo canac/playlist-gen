@@ -23,6 +23,7 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
     include: { album: true, artists: true },
   });
   const [labels, tracks] = await Promise.all([labelsPromise, tracksPromise]);
+  const labelNames = sortBy(uniq(labels.map((label) => label.name)));
   const trackNames = sortBy(uniq(tracks.map((track) => track.name)));
   const albumNames = sortBy(uniq(tracks.map((track) => track.album.name)));
   const artistNames = sortBy(
@@ -61,9 +62,9 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
     { value: "released<3m", description: "Released less than 3 months ago" },
     { value: "released>=1y", description: "Released more than 1 year ago" },
 
-    ...labels.map((label) => ({
-      value: `label:"${label.name}"`,
-      description: `Has label "${label.name}"`,
+    ...labelNames.map((name) => ({
+      value: `label:"${name}"`,
+      description: `Has label "${name}"`,
     })),
     ...trackNames.map((name) => ({
       value: `name:"${name}"`,
