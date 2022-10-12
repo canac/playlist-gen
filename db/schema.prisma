@@ -76,7 +76,7 @@ model Album {
   name         String
   thumbnailUrl String
   dateReleased DateTime
-  Track        Track[]
+  tracks       Track[]
 }
 
 model Artist {
@@ -85,7 +85,7 @@ model Artist {
   updatedAt DateTime @updatedAt
   name      String
   genres    String[]
-  Track     Track[]
+  tracks    Track[]
 }
 
 model Track {
