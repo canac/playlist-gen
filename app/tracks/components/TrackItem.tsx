@@ -97,13 +97,22 @@ export default function TrackItem({
       }}
     >
       <Avatar alt={`${track.name} album artwork`} src={track.album.thumbnailUrl} />
-      <Box sx={{ display: "flex", flexDirection: "column" }}>
-        <Text size="lg">{track.name}</Text>
-        <Text color="dimmed" size="sm">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <Text size="lg" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+          {track.name}
+        </Text>
+        <Text color="dimmed" size="sm" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
           {map(track.artists, "name").join(" & ")}
         </Text>
       </Box>
-      <Box sx={{ flex: 1 }} />
       <MultiSelect
         rightSection={setLabelsLoading || createLabelLoading ? <Loader size={16} /> : null}
         label="Track labels"
