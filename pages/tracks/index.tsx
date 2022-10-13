@@ -12,7 +12,7 @@ import TrackList from "app/tracks/components/TrackList";
 import getSearchExamples from "app/tracks/queries/getSearchExamples";
 import getTracks from "app/tracks/queries/getTracks";
 
-const ITEMS_PER_PAGE = 50;
+const ITEMS_PER_PAGE = 20;
 
 export const TracksList = () => {
   const router = useRouter();
