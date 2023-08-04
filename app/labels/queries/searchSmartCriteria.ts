@@ -28,16 +28,20 @@ export default resolver.pipe(
       };
     }
 
-    const matches = await db.track.findMany({
+    const matchesPromise = db.track.findMany({
       where: { userId, ...where },
-      take: 500,
+      take: 5,
       select: { name: true },
     });
+    const countPromise = db.track.count({
+      where: { userId, ...where },
+    });
+    const [matches, matchCount] = await Promise.all([matchesPromise, countPromise]);
     return {
       success: true as const,
       data: {
-        matchCount: matches.length,
-        matchExamples: matches.slice(0, 5).map((track) => track.name),
+        matchCount,
+        matchExamples: matches.map((track) => track.name),
       },
     };
   },
