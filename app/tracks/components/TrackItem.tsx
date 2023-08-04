@@ -137,7 +137,11 @@ export default function TrackItem({
         onCreate={(labelName) => {
           handleAsyncErrors(
             (async () => {
-              const { id } = await createLabelMutation({ name: labelName, smartCriteria: null });
+              const { id } = await createLabelMutation({
+                name: labelName,
+                smartCriteria: null,
+                generatePlaylist: true,
+              });
               await invalidateQuery(getLabels);
               setPendingLabel(null);
               return updateLabels([...trackLabels, id.toString()]);

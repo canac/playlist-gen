@@ -9,6 +9,9 @@ const CreateLabel = z.object({
 
   // The smart criteria of the new label, or null if it is not a smart label
   smartCriteria: z.union([nonEmptyString, z.null()]),
+
+  // True if the label will create a Spotify playlist
+  generatePlaylist: z.boolean(),
 });
 
 /*
@@ -17,7 +20,7 @@ const CreateLabel = z.object({
 export default resolver.pipe(
   resolver.zod(CreateLabel),
   resolver.authorize(),
-  async ({ name, smartCriteria }, ctx) => {
+  async ({ name, smartCriteria, generatePlaylist }, ctx) => {
     const userId = ctx.session.userId;
 
     // Create the label
@@ -26,6 +29,7 @@ export default resolver.pipe(
         userId,
         name,
         smartCriteria,
+        generatePlaylist,
       },
     });
 

@@ -244,7 +244,7 @@ const CreatePlaylistResponse = z.object({
 export async function syncPlaylists(user: User): Promise<void> {
   // Find all labels that don't have a playlist yet
   const newLabels = await db.label.findMany({
-    where: { userId: user.id, playlist: null },
+    where: { userId: user.id, playlist: null, generatePlaylist: true },
   });
 
   // Create the new Spotify playlists in parallel

@@ -15,7 +15,7 @@ export default function CreateLabelForm(): JSX.Element {
   const [createLabelMutation, { isLoading: isCreating }] = useMutation(createLabel);
 
   const form = useForm({
-    initialValues: { name: "", smartLabel: false, smartCriteria: "" },
+    initialValues: { name: "", smartLabel: false, smartCriteria: "", generatePlaylist: false },
   });
 
   // Leave the create label form
@@ -26,12 +26,13 @@ export default function CreateLabelForm(): JSX.Element {
   return (
     <Box
       component="form"
-      onSubmit={form.onSubmit(({ name, smartLabel, smartCriteria }) => {
+      onSubmit={form.onSubmit(({ name, smartLabel, smartCriteria, generatePlaylist }) => {
         handleAsyncErrors(
           (async () => {
             await createLabelMutation({
               name,
               smartCriteria: smartLabel ? smartCriteria : null,
+              generatePlaylist,
             });
             await invalidateQuery(getLabels);
             await close();
@@ -61,7 +62,9 @@ export default function CreateLabelForm(): JSX.Element {
           label="Smart criteria"
           {...form.getInputProps("smartCriteria")}
         />
-      ) : null}
+      ) : (
+        <Checkbox label="Generate playlist" {...form.getInputProps("generatePlaylist")} />
+      )}
       <Button
         type="submit"
         loading={isCreating}
