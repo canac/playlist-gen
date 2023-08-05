@@ -112,11 +112,8 @@ const OauthCallbackPage: BlitzPage = (
       <Box sx={{ margin: "1em" }}>
         <Text>Logging you in...</Text>
         <Text>
-          Click{" "}
-          <Link href={redirectUri}>
-            <a>here</a>
-          </Link>{" "}
-          to return to the site if you are not redirected automatically.
+          Click <Link href={redirectUri}>here</Link> to return to the site if you are not redirected
+          automatically.
         </Text>
       </Box>
     </Layout>

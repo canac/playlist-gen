@@ -10,7 +10,7 @@ import {
   IconLogout,
   IconUserCircle,
   IconX,
-} from "@tabler/icons";
+} from "@tabler/icons-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -77,10 +77,10 @@ const Layout: BlitzLayout<{
             {user && (
               <>
                 <Link href={Routes.TracksPage()}>
-                  <Button component="a">Tracks</Button>
+                  <Button>Tracks</Button>
                 </Link>
                 <Link href={Routes.LabelsPage()}>
-                  <Button component="a">Labels</Button>
+                  <Button>Labels</Button>
                 </Link>
                 <Box sx={{ flex: 1 }} />
                 <TooltipActionIcon

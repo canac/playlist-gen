@@ -3,7 +3,7 @@ import { invalidateQuery, useMutation, useQuery } from "@blitzjs/rpc";
 import { Box, Button, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { openConfirmModal } from "@mantine/modals";
-import { IconTrash, IconX } from "@tabler/icons";
+import { IconTrash, IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import deleteLabel from "../mutations/deleteLabel";
 import editLabel from "../mutations/editLabel";

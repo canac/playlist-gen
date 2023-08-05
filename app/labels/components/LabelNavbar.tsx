@@ -9,7 +9,7 @@ import {
   IconCirclePlus,
   IconTag,
   IconWand,
-} from "@tabler/icons";
+} from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
@@ -49,7 +49,7 @@ export default function LabelNavbar(): JSX.Element {
       {labels.map((label) => (
         <Box key={label.id} sx={buttonStyles}>
           <Link href={Routes.EditLabelPage({ page, labelId: label.id })}>
-            <UnstyledButton component="a">
+            <UnstyledButton>
               <Text>
                 <IconTag size={16} style={{ marginRight: "0.25em" }} />
                 <Text component="span" weight="bold">
@@ -67,7 +67,7 @@ export default function LabelNavbar(): JSX.Element {
         </Box>
       ))}
       <Link href={Routes.NewLabelPage({ page })}>
-        <UnstyledButton component="a" sx={buttonStyles}>
+        <UnstyledButton sx={buttonStyles}>
           <Text weight="bold" sx={{ display: "flex", alignItems: "center" }}>
             <IconCirclePlus size={16} style={{ marginRight: "0.25em" }} color="green" />
             Create label...

@@ -2,7 +2,7 @@ import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { Box, Button, Checkbox, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconX } from "@tabler/icons";
+import { IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import createLabel from "../mutations/createLabel";
 import getLabels from "../queries/getLabels";

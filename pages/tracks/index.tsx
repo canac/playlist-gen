@@ -1,7 +1,7 @@
 import { BlitzPage } from "@blitzjs/next";
 import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
 import { Autocomplete, Box, Pagination, Select, Text, useMantineTheme } from "@mantine/core";
-import { IconReload, IconSearch } from "@tabler/icons";
+import { IconReload, IconSearch } from "@tabler/icons-react";
 import { assert } from "blitz";
 import { useRouter } from "next/router";
 import { Suspense, useState } from "react";
@@ -114,7 +114,7 @@ export const TracksList = () => {
           withEdges
           position="center"
           p="lg"
-          page={page}
+          value={page}
           onChange={(page) => {
             handleAsyncErrors(router.push({ query: { page } }));
           }}

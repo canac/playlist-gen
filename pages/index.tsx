@@ -1,6 +1,6 @@
 import { BlitzPage, Routes } from "@blitzjs/next";
 import { Box, Text, Title } from "@mantine/core";
-import { IconCloudDownload, IconCloudUpload } from "@tabler/icons";
+import { IconCloudDownload, IconCloudUpload } from "@tabler/icons-react";
 import Link from "next/link";
 import Layout from "app/core/layouts/Layout";
 

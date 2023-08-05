@@ -1,7 +1,7 @@
 import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps, Routes } from "@blitzjs/next";
 import { Box, MantineProvider, Text, Title } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
-import { NotificationsProvider } from "@mantine/notifications";
+import { Notifications } from "@mantine/notifications";
 import { AuthenticationError, AuthorizationError } from "blitz";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -56,11 +56,10 @@ function MyApp({ Component, pageProps }: AppProps) {
         }}
         emotionCache={emotionCache}
       >
-        <NotificationsProvider>
-          <ModalsProvider>
-            <Suspense fallback="Loading...">{getLayout(<Component {...pageProps} />)}</Suspense>
-          </ModalsProvider>
-        </NotificationsProvider>
+        <Notifications />
+        <ModalsProvider>
+          <Suspense fallback="Loading...">{getLayout(<Component {...pageProps} />)}</Suspense>
+        </ModalsProvider>
       </MantineProvider>
     </ErrorBoundary>
   );
