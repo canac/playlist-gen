@@ -1,10 +1,11 @@
 import { BlitzPage } from "@blitzjs/next";
 import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
-import { Autocomplete, Box, Pagination, Select, Text } from "@mantine/core";
-import { IconSearch } from "@tabler/icons";
+import { Autocomplete, Box, Pagination, Select, Text, useMantineTheme } from "@mantine/core";
+import { IconReload, IconSearch } from "@tabler/icons";
 import { assert } from "blitz";
 import { useRouter } from "next/router";
 import { Suspense, useState } from "react";
+import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import Layout from "app/core/layouts/Layout";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/async";
@@ -19,7 +20,7 @@ export const TracksList = () => {
   const page = Math.max(Number(router.query.page) || 1, 1);
 
   const [search, setSearch] = useState("");
-  const [result] = usePaginatedQuery(getTracks, {
+  const [result, { refetch, isLoading }] = usePaginatedQuery(getTracks, {
     search,
     skip: ITEMS_PER_PAGE * (page - 1),
     take: ITEMS_PER_PAGE,
@@ -59,9 +60,11 @@ export const TracksList = () => {
     };
   });
 
+  const theme = useMantineTheme();
+
   return (
     <div>
-      <Box sx={{ display: "flex", gap: "3em", paddingBottom: "1em" }}>
+      <Box sx={{ display: "flex", gap: "1em", paddingBottom: "1em" }}>
         <Autocomplete
           label="Search"
           rightSection={<IconSearch />}
@@ -77,6 +80,18 @@ export const TracksList = () => {
           })}
           sx={{ flex: 2 }}
         />
+        <TooltipActionIcon
+          label="Refresh"
+          size="lg"
+          onClick={() => refetch()}
+          disabled={isLoading || typeof result.error !== "undefined"}
+          sx={{
+            marginTop: `${theme.lineHeight}em`,
+            marginRight: "2em",
+          }}
+        >
+          <IconReload />
+        </TooltipActionIcon>
         <Select
           label="Quick apply label"
           data={labels.map((label) => ({

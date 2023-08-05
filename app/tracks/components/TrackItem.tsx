@@ -1,7 +1,7 @@
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { Avatar, Box, Loader, MultiSelect, SelectItem, Text } from "@mantine/core";
 import { map } from "lodash";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import createLabel from "app/labels/mutations/createLabel";
 import setLabel from "app/labels/mutations/setLabel";
 import setLabels from "app/labels/mutations/setLabels";
@@ -32,7 +32,10 @@ export default function TrackItem({
   const [setLabelsMutation, { isLoading: setLabelsLoading }] = useMutation(setLabels);
   const [createLabelMutation, { isLoading: createLabelLoading }] = useMutation(createLabel);
 
-  const [trackLabels, setTrackLabels] = useState(track.labels.map((label) => label.id.toString()));
+  const [trackLabels, setTrackLabels] = useState<string[]>([]);
+  useEffect(() => {
+    setTrackLabels(track.labels.map((label) => label.id.toString()));
+  }, [track.labels]);
 
   // When the user creates a new label by typing a label that doesn't exist yet, MultiSelect forces
   // us to synchronously create that new label before we have a chance to save it on the server. To
