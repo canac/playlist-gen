@@ -1,23 +1,27 @@
+import { vi } from "vitest";
 import { generatePrismaFilter } from "./smartLabel";
 
-jest.useFakeTimers().setSystemTime(new Date(2022, 3, 1));
-
 describe("validateSmartCriteria", () => {
-  describe("supports clean", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2022, 3, 1));
+  });
+
+  it("supports clean", () => {
     expect(generatePrismaFilter("clean")).toEqual({ explicit: false });
   });
 
-  describe("supports explicit", () => {
+  it("supports explicit", () => {
     expect(generatePrismaFilter("explicit")).toEqual({ explicit: true });
   });
 
-  describe("supports unlabeled", () => {
+  it("supports unlabeled", () => {
     expect(generatePrismaFilter("unlabeled")).toEqual({ labels: { none: {} } });
   });
 
   const names = ["Name", "Name with space", "&&:||:()"];
 
-  describe("supports name", () => {
+  it("supports name", () => {
     names.forEach((name) => {
       expect(generatePrismaFilter(`name:"${name}"`)).toEqual({
         name: { contains: name, mode: "insensitive" },
@@ -25,19 +29,19 @@ describe("validateSmartCriteria", () => {
     });
   });
 
-  describe("supports label", () => {
+  it("supports label", () => {
     names.forEach((name) => {
       expect(generatePrismaFilter(`label:"${name}"`)).toEqual({ labels: { some: { name } } });
     });
   });
 
-  describe("supports album", () => {
+  it("supports album", () => {
     names.forEach((name) => {
       expect(generatePrismaFilter(`album:"${name}"`)).toEqual({ album: { name } });
     });
   });
 
-  describe("supports artist", () => {
+  it("supports artist", () => {
     names.forEach((name) => {
       expect(generatePrismaFilter(`artist:"${name}"`)).toEqual({ artists: { some: { name } } });
     });
@@ -321,19 +325,19 @@ describe("validateSmartCriteria", () => {
     expect(generatePrismaFilter(`!clean`)).toEqual({ NOT: clean });
   });
 
-  describe("supports &&", () => {
+  it("supports &&", () => {
     expect(generatePrismaFilter(`clean && clean`)).toEqual({
       AND: [clean, clean],
     });
   });
 
-  describe("supports ||", () => {
+  it("supports ||", () => {
     expect(generatePrismaFilter(`clean || clean`)).toEqual({
       OR: [clean, clean],
     });
   });
 
-  describe("supports parentheses", () => {
+  it("supports parentheses", () => {
     expect(generatePrismaFilter(`!(clean || (clean && (!clean) || clean))`)).toEqual({
       NOT: {
         OR: [
