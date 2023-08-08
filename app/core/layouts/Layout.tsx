@@ -89,10 +89,9 @@ const Layout: BlitzLayout<{
                   variant="filled"
                   color="white"
                   onClick={async () => {
-                    let succeeded = await resolves(pullTracksMutation());
-                    await invalidateQuery(getTracks);
-
+                    const succeeded = await resolves(pullTracksMutation());
                     if (succeeded) {
+                      await invalidateQuery(getTracks);
                       successNotification("Pulling tracks succeeded!");
                     } else {
                       failureNotification("Pulling tracks failed!");
@@ -108,7 +107,7 @@ const Layout: BlitzLayout<{
                   variant="filled"
                   color="white"
                   onClick={async () => {
-                    let succeeded = await resolves(pushTracksMutation());
+                    const succeeded = await resolves(pushTracksMutation());
                     if (succeeded) {
                       successNotification("Pushing playlists succeeded!");
                     } else {
