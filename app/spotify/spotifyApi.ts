@@ -168,8 +168,9 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
           id: album.id,
           name: album.name,
           thumbnailUrl:
-            album.images[0]?.url ??
-            `https://via.placeholder.com/640.jpg?text=${encodeURIComponent(album.name)}`,
+            // The last image has the smallest dimensions
+            album.images.at(-1)?.url ??
+            `https://via.placeholder.com/64.jpg?text=${encodeURIComponent(album.name)}`,
           dateReleased: new Date(album.release_date),
         })),
         "id",
