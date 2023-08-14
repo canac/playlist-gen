@@ -1,6 +1,6 @@
 import { BlitzPage } from "@blitzjs/next";
 import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
-import { Autocomplete, Box, Pagination, Select, Text, useMantineTheme } from "@mantine/core";
+import { Autocomplete, Box, Pagination, Text, useMantineTheme } from "@mantine/core";
 import { IconReload, IconSearch } from "@tabler/icons-react";
 import { assert } from "blitz";
 import { useRouter } from "next/router";
@@ -9,7 +9,7 @@ import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import Layout from "app/core/layouts/Layout";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/async";
-import TrackList from "app/tracks/components/TrackList";
+import TrackList from "app/tracks/components/TrackList/TrackList";
 import getSearchExamples from "app/tracks/queries/getSearchExamples";
 import getTracks from "app/tracks/queries/getTracks";
 
@@ -36,8 +36,6 @@ export const TracksList = () => {
     },
   ] = useQuery(getSearchExamples, {});
   const pageCount = Math.ceil(count / ITEMS_PER_PAGE);
-
-  const [quickLabel, setQuickLabel] = useState<number | null>(null);
 
   const searchOptions = examples.map(({ value, description }) => {
     // Break the search query into the tail (the incomplete search term) and
@@ -87,27 +85,12 @@ export const TracksList = () => {
           disabled={isLoading || typeof result.error !== "undefined"}
           sx={{
             marginTop: `${theme.lineHeight}em`,
-            marginRight: "2em",
           }}
         >
           <IconReload />
         </TooltipActionIcon>
-        <Select
-          label="Quick apply label"
-          data={labels.map((label) => ({
-            value: label.id.toString(),
-            label: label.name,
-          }))}
-          value={quickLabel?.toString() ?? ""}
-          onChange={(labelId) => {
-            setQuickLabel(labelId === null ? null : Number(labelId));
-          }}
-          searchable
-          clearable
-          sx={{ flex: 1 }}
-        />
       </Box>
-      <TrackList tracks={tracks} labels={labels} quickLabel={quickLabel} />
+      <TrackList tracks={tracks} labels={labels} />
       {pageCount > 1 || page > 1 ? (
         <Pagination
           total={pageCount}
@@ -115,9 +98,7 @@ export const TracksList = () => {
           position="center"
           p="lg"
           value={page}
-          onChange={(page) => {
-            handleAsyncErrors(router.push({ query: { page } }));
-          }}
+          onChange={(page) => handleAsyncErrors(router.push({ query: { page } }))}
         />
       ) : null}
     </div>

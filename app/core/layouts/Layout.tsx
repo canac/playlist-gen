@@ -2,14 +2,11 @@ import { BlitzLayout } from "@blitzjs/next";
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { ActionIcon, AppShell, Avatar, Box, Button, Header, Menu, Title } from "@mantine/core";
-import { showNotification } from "@mantine/notifications";
 import {
-  IconCheck,
   IconCloudDownload,
   IconCloudUpload,
   IconLogout,
   IconUserCircle,
-  IconX,
 } from "@tabler/icons-react";
 import Head from "next/head";
 import Link from "next/link";
@@ -19,6 +16,7 @@ import { TooltipActionIcon } from "../components/TooltipActionIcon";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import logout from "app/auth/mutations/logout";
 import { resolves } from "app/lib/async";
+import { failureNotification, successNotification } from "app/lib/notification";
 import pullTracks from "app/spotify/mutations/pullTracks";
 import pushTracks from "app/spotify/mutations/pushTracks";
 import getTracks from "app/tracks/queries/getTracks";
@@ -34,22 +32,6 @@ const Layout: BlitzLayout<{
   const [pullTracksMutation, { isLoading: pullLoading }] = useMutation(pullTracks);
   const [pushTracksMutation, { isLoading: pushLoading }] = useMutation(pushTracks);
   const [logoutMutation] = useMutation(logout);
-
-  function successNotification(message: string) {
-    showNotification({
-      message,
-      color: "green",
-      icon: <IconCheck />,
-    });
-  }
-
-  function failureNotification(message: string) {
-    showNotification({
-      message,
-      color: "red",
-      icon: <IconX />,
-    });
-  }
 
   return (
     <>

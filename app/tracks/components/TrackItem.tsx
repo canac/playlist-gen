@@ -1,12 +1,11 @@
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
-import { Avatar, Box, Loader, MultiSelect, SelectItem, Text } from "@mantine/core";
+import { Avatar, Text, UnstyledButton, createStyles } from "@mantine/core";
+import { IconTag, IconX } from "@tabler/icons-react";
 import { map } from "lodash";
-import { useEffect, useState } from "react";
-import createLabel from "app/labels/mutations/createLabel";
-import setLabel from "app/labels/mutations/setLabel";
-import setLabels from "app/labels/mutations/setLabels";
-import getLabels from "app/labels/queries/getLabels";
+import getTracks from "../queries/getTracks";
+import setLabel from "app/labels/mutations/removeLabel";
 import { handleAsyncErrors } from "app/lib/async";
+import { failureNotification } from "app/lib/notification";
 import { Album, Artist, Label, Track } from "db";
 
 export type TrackItemProps = {
@@ -15,149 +14,88 @@ export type TrackItemProps = {
     artists: Artist[];
     labels: Label[];
   };
-
-  // All available dumb labels
-  labels: Label[];
-
-  // The id of the active quick apply label
-  quickLabelId: number | null;
 };
 
-export default function TrackItem({
-  labels: allLabels,
-  track,
-  quickLabelId,
-}: TrackItemProps): JSX.Element {
+const useStyles = createStyles((theme) => ({
+  container: {
+    padding: theme.spacing.sm,
+    borderRadius: theme.radius.sm,
+    display: "flex",
+    flexDirection: "row",
+    gap: theme.spacing.md,
+    alignItems: "center",
+  },
+  info: {
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+  },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing.md,
+  },
+  title: {
+    marginRight: theme.spacing.lg,
+  },
+  label: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5ch",
+    fontSize: theme.fontSizes.sm,
+    backgroundColor: theme.colors.green[3],
+    padding: `calc(${theme.spacing.xs} / 4) calc(${theme.spacing.xs} / 2)`,
+    borderRadius: theme.radius.md,
+  },
+  overflowEllipsis: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  deleteIcon: {
+    cursor: "pointer",
+    lineHeight: 0,
+  },
+}));
+
+export default function TrackItem({ track }: TrackItemProps): JSX.Element {
+  const { classes, cx } = useStyles();
   const [setLabelMutation] = useMutation(setLabel);
-  const [setLabelsMutation, { isLoading: setLabelsLoading }] = useMutation(setLabels);
-  const [createLabelMutation, { isLoading: createLabelLoading }] = useMutation(createLabel);
 
-  const [trackLabels, setTrackLabels] = useState<string[]>([]);
-  useEffect(() => {
-    setTrackLabels(track.labels.map((label) => label.id.toString()));
-  }, [track.labels]);
-
-  // When the user creates a new label by typing a label that doesn't exist yet, MultiSelect forces
-  // us to synchronously create that new label before we have a chance to save it on the server. To
-  // work around this, when creating a new label, we synchronously add a new label with
-  // `value: pendingLabelId` to the MultiSelect options and then asynchronously create the label
-  // and refresh the labels list. Once we have the updated list of labels, we can safely remove the
-  // pending label from the options.
-  const pendingLabelId = "*";
-  // `pendingLabel` is the label pending creation
-  const [pendingLabel, setPendingLabel] = useState<SelectItem | null>(null);
-
-  // Handle changes to the selected labels
-  async function updateLabels(labelIds: string[]) {
-    setTrackLabels(labelIds);
-
-    // Update the track's labels on the server, ignoring the pending label because it won't exist
-    // on the server yet
-    await setLabelsMutation({
-      trackId: track.id,
-      labelIds: labelIds.filter((id) => id !== pendingLabelId).map((id) => Number(id)),
-    });
-  }
-
-  const hasQuickLabel = trackLabels.some((label) => label === quickLabelId?.toString());
+  const removeLabel = async (labelId: number) => {
+    try {
+      await setLabelMutation({ trackId: track.id, labelId });
+    } catch (err) {
+      failureNotification("Failed to remove label from track");
+    }
+    await invalidateQuery(getTracks);
+  };
 
   return (
-    <Box
-      sx={(theme) => ({
-        padding: theme.spacing.sm,
-        borderRadius: theme.radius.sm,
-        display: "flex",
-        flexDirection: "row",
-        gap: "1em",
-        alignItems: "center",
-
-        "&:hover":
-          quickLabelId === null
-            ? undefined
-            : {
-                backgroundColor: hasQuickLabel ? theme.colors.red[1] : theme.colors.green[1],
-                cursor: "pointer",
-              },
-      })}
-      onClick={async () => {
-        if (quickLabelId === null) {
-          return;
-        }
-
-        if (hasQuickLabel) {
-          // Remove the quick label from the labels list
-          setTrackLabels(trackLabels.filter((labelId) => labelId !== quickLabelId.toString()));
-        } else {
-          // Add the quick label to the labels list
-          setTrackLabels([...trackLabels, quickLabelId.toString()]);
-        }
-
-        await setLabelMutation({
-          trackId: track.id,
-          labelId: quickLabelId,
-          operation: hasQuickLabel ? "remove" : "add",
-        });
-      }}
-    >
+    <div className={classes.container}>
       <Avatar alt={`${track.name} album artwork`} src={track.album.thumbnailUrl} />
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <Text size="lg" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-          {track.name}
+      <div className={classes.info}>
+        <Text className={cx(classes.overflowEllipsis, classes.titleRow)} size="lg">
+          <span className={classes.title}>{track.name}</span>
+          {track.labels.map((label) => (
+            <Text key={label.id} component="span" className={classes.label}>
+              <IconTag size="1em" />
+              {label.name}
+              <UnstyledButton
+                className={classes.deleteIcon}
+                // Prevent the mouse down event from initiating a drag in TrackList
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={() => handleAsyncErrors(removeLabel(label.id))}
+              >
+                <IconX size="1em" />
+              </UnstyledButton>
+            </Text>
+          ))}
         </Text>
-        <Text color="dimmed" size="sm" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+        <Text className={classes.overflowEllipsis} color="dimmed" size="sm">
           {map(track.artists, "name").join(" & ")}
         </Text>
-      </Box>
-      <MultiSelect
-        rightSection={setLabelsLoading || createLabelLoading ? <Loader size={16} /> : null}
-        label="Track labels"
-        data={[
-          ...allLabels.map((label) => ({ value: label.id.toString(), label: label.name })),
-          ...(pendingLabel ? [pendingLabel] : []),
-        ]}
-        value={trackLabels}
-        onChange={(labelIds) => {
-          handleAsyncErrors(updateLabels(labelIds));
-        }}
-        searchable
-        creatable={!createLabelLoading} // Only one label can be pending creation at a time
-        getCreateLabel={(query) => (
-          <Text>
-            Create new label:{" "}
-            <Text span weight="bold">
-              {query}
-            </Text>
-          </Text>
-        )}
-        onCreate={(labelName) => {
-          handleAsyncErrors(
-            (async () => {
-              const { id } = await createLabelMutation({
-                name: labelName,
-                smartCriteria: null,
-                generatePlaylist: true,
-              });
-              await invalidateQuery(getLabels);
-              setPendingLabel(null);
-              return updateLabels([...trackLabels, id.toString()]);
-            })(),
-          );
-
-          const newLabel = { value: pendingLabelId, label: labelName };
-          setPendingLabel(newLabel);
-          return newLabel;
-        }}
-        clearable
-        sx={{ width: 400 }}
-      />
-    </Box>
+      </div>
+    </div>
   );
 }

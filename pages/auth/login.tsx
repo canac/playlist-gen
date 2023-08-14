@@ -45,11 +45,13 @@ export const getServerSideProps = gSSP(async ({ req, ctx }) => {
   };
 });
 
-const LoginPage: BlitzPage = (props: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const LoginPage: BlitzPage = ({
+  spotifyOauthUrl,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (
     <Layout title="Log In">
       <Box sx={{ textAlign: "center", paddingTop: "1em" }}>
-        <Button component="a" href={props.spotifyOauthUrl}>
+        <Button component="a" href={spotifyOauthUrl}>
           Login with Spotify
         </Button>
       </Box>

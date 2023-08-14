@@ -3,24 +3,21 @@ import { z } from "zod";
 import { primaryKey } from "app/lib/zodTypes";
 import db from "db";
 
-const SetLabel = z.object({
-  // The id of the track to add or remove the label to
+const RemoveLabel = z.object({
+  // The id of the track to remove the label from
   trackId: primaryKey,
 
-  // The id of the label to add or remove from the track
+  // The id of the label to remove from the track
   labelId: primaryKey,
-
-  // Whether to add or remove the label from the track
-  operation: z.union([z.literal("add"), z.literal("remove")]),
 });
 
 /*
- * Add a label to or remove a label from a track.
+ * Remove a label from a track.
  */
 export default resolver.pipe(
-  resolver.zod(SetLabel),
+  resolver.zod(RemoveLabel),
   resolver.authorize(),
-  async ({ trackId, labelId, operation }, ctx) => {
+  async ({ trackId, labelId }, ctx) => {
     const userId = ctx.session.userId;
 
     // Ensure that the user owns the track and label
@@ -34,13 +31,11 @@ export default resolver.pipe(
     });
     await Promise.all([verifyTrack, verifyLabel]);
 
-    // Add or remove the label
-    const mutation =
-      operation === "add" ? { connect: { id: labelId } } : { disconnect: { id: labelId } };
+    // Remove the label
     await db.track.update({
       where: { id: trackId },
       data: {
-        labels: mutation,
+        labels: { disconnect: { id: labelId } },
       },
     });
 
