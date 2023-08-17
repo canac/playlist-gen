@@ -3,7 +3,7 @@ import { z } from "zod";
 import { nonEmptyString } from "app/lib/zodTypes";
 import db from "db";
 
-const CreateLabel = z.object({
+const schema = z.object({
   // The name of the new label
   name: nonEmptyString,
 
@@ -18,7 +18,7 @@ const CreateLabel = z.object({
  * Create a new label.
  */
 export default resolver.pipe(
-  resolver.zod(CreateLabel),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ name, smartCriteria, generatePlaylist }, ctx) => {
     const userId = ctx.session.userId;
@@ -29,7 +29,7 @@ export default resolver.pipe(
         userId,
         name,
         smartCriteria,
-        generatePlaylist,
+        generatePlaylist: generatePlaylist || smartCriteria !== null,
       },
     });
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { nonEmptyString, primaryKey } from "app/lib/zodTypes";
 import db from "db";
 
-const EditLabel = z.object({
+const schema = z.object({
   // The id of the label to edit
   labelId: primaryKey,
 
@@ -22,14 +22,14 @@ const EditLabel = z.object({
  * Modify an existing label.
  */
 export default resolver.pipe(
-  resolver.zod(EditLabel),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ labelId, fields }, ctx) => {
     const userId = ctx.session.userId;
 
     // Update the label
     const where = { id: labelId, userId };
-    await db.label.updateMany({
+    await db.label.update({
       where,
       data: fields,
     });

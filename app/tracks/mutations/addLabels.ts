@@ -3,7 +3,7 @@ import { z } from "zod";
 import { primaryKey } from "app/lib/zodTypes";
 import db from "db";
 
-const AddLabels = z.object({
+const schema = z.object({
   // The ids of the tracks to add the label to
   trackIds: z.array(primaryKey),
 
@@ -15,7 +15,7 @@ const AddLabels = z.object({
  * Add a label to multiple tracks.
  */
 export default resolver.pipe(
-  resolver.zod(AddLabels),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ trackIds, labelId }, ctx) => {
     const userId = ctx.session.userId;
@@ -33,19 +33,13 @@ export default resolver.pipe(
     });
     const [_, tracks] = await Promise.all([verifyLabel, verifyTracks]);
 
-    // Link the tracks to the label
-    await Promise.all(
-      tracks.map((track) =>
-        db.track.update({
-          where: { id: track.id },
-          data: {
-            labels: {
-              connect: { id: labelId },
-            },
-          },
-        }),
-      ),
-    );
+    // Add the labels to the tracks
+    await db.trackLabel.createMany({
+      data: tracks.map((track) => ({
+        trackId: track.id,
+        labelId,
+      })),
+    });
 
     return { success: true };
   },

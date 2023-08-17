@@ -1,15 +1,15 @@
-// Expose higher-level methods for interacting with the Spotify API
-
-import { chunk, difference, differenceBy, map, pick, uniq, uniqBy } from "lodash";
+import { chunk, difference, map, uniq } from "lodash";
 import log from "loglevel";
 import { z } from "zod";
 import { env } from "../lib/env";
 import { generatePrismaFilter } from "../lib/smartLabel";
 import db, { Artist, Prisma, User } from "db";
 
+// Expose higher-level methods for interacting with the Spotify API
+
 // POST https://accounts.spotify.com/api/token
 // Only includes fields that we care about
-const TokenResponse = z.object({
+const tokenResponse = z.object({
   access_token: z.string(),
   expires_in: z.number(),
 });
@@ -30,7 +30,7 @@ async function refreshAccessToken(user: User): Promise<void> {
       "Content-Type": "application/x-www-form-urlencoded",
     },
   });
-  const { access_token: accessToken, expires_in: expiresIn } = TokenResponse.parse(
+  const { access_token: accessToken, expires_in: expiresIn } = tokenResponse.parse(
     await tokenRes.json(),
   );
 
@@ -81,7 +81,7 @@ async function spotifyFetch(user: User, req: Request): Promise<unknown> {
 
 // GET https://api.spotify.com/v1/me/tracks
 // Only includes fields that we care about
-const TracksResponse = z.object({
+const tracksResponse = z.object({
   items: z.array(
     z.object({
       added_at: z.string(),
@@ -111,7 +111,7 @@ const TracksResponse = z.object({
 
 // GET https://api.spotify.com/v1/artists
 // Only includes fields that we care about
-const ArtistsResponse = z.object({
+const artistsResponse = z.object({
   artists: z.array(
     z.object({
       id: z.string(),
@@ -129,7 +129,7 @@ async function lookupArtists(user: User, artistIds: string[]): Promise<SpotifyAr
 
   // Load the artists' information 50 at a time
   for (const chunkIds of chunk(artistIds, 50)) {
-    const { artists } = ArtistsResponse.parse(
+    const { artists } = artistsResponse.parse(
       await spotifyFetch(
         user,
         new Request(
@@ -154,73 +154,84 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     // Get the user's most recent favorite tracks from Spotify
-    const tracks = TracksResponse.parse(
+    const tracks = tracksResponse.parse(
       await spotifyFetch(
         user,
         new Request(`https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${limit}`),
       ),
     );
 
-    // Create the albums that the tracks reference
-    const albumsPromise = db.album.createMany({
-      data: uniqBy(
-        tracks.items.map(({ track: { album } }) => ({
-          id: album.id,
-          name: album.name,
-          thumbnailUrl:
-            // The last image has the smallest dimensions
-            album.images.at(-1)?.url ??
-            `https://via.placeholder.com/64.jpg?text=${encodeURIComponent(album.name)}`,
-          dateReleased: new Date(album.release_date),
-        })),
-        "id",
-      ),
-      skipDuplicates: true,
-    });
-
     // Create the artists that the tracks reference
-    const trackArtistIds = uniq(tracks.items.flatMap((item) => map(item.track.artists, "id")));
+    const incomingArtistIds = uniq(tracks.items.flatMap((item) => map(item.track.artists, "id")));
     const existingArtistIds = map(
       await db.artist.findMany({
-        where: { id: { in: trackArtistIds } },
+        where: { id: { in: incomingArtistIds } },
         select: { id: true },
       }),
       "id",
     );
-    const newArtistIds = difference(trackArtistIds, existingArtistIds);
+    const newArtistIds = difference(incomingArtistIds, existingArtistIds);
     const newArtists = await lookupArtists(user, newArtistIds);
-    const artistsPromise = db.artist.createMany({
+    await db.artist.createMany({
       data: newArtists,
     });
 
-    // Create albums and artists in parallel
-    await Promise.all([albumsPromise, artistsPromise]);
-
     // Create the tracks themselves
-    const newTracks: Prisma.TrackCreateInput[] = tracks.items.map((item) => ({
-      user: { connect: { id: user.id } },
-      spotifyId: item.track.id,
-      name: item.track.name,
-      album: { connect: { id: item.track.album.id } },
-      artists: {
-        connect: item.track.artists.map((artist) => pick(artist, ["id"])),
-      },
-      dateAdded: item.added_at,
-      explicit: item.track.explicit,
-    }));
+    const newTracks = tracks.items.map(
+      ({ track, added_at }) =>
+        ({
+          user: { connect: { id: user.id } },
+          spotifyTrack: {
+            connectOrCreate: {
+              where: { id: track.id },
+              create: {
+                id: track.id,
+                name: track.name,
+                album: {
+                  connectOrCreate: {
+                    where: { id: track.album.id },
+                    create: {
+                      id: track.album.id,
+                      name: track.album.name,
+                      thumbnailUrl:
+                        // The last image has the smallest dimensions
+                        track.album.images.at(-1)?.url ??
+                        `https://via.placeholder.com/64.jpg?text=${encodeURIComponent(
+                          track.album.name,
+                        )}`,
+                      dateReleased: new Date(track.album.release_date),
+                    },
+                  },
+                },
+                artists: {
+                  connect: track.artists.map((artist) => ({ id: artist.id })),
+                },
+                explicit: track.explicit,
+              },
+            },
+          },
+          dateAdded: added_at,
+        } satisfies Prisma.TrackCreateInput),
+    );
 
     // See if any of the tracks are already in the database
     const existingTracks = await db.track.findMany({
-      select: { spotifyId: true },
+      select: { spotifyTrackId: true },
       where: {
         userId: user.id,
-        spotifyId: { in: map(newTracks, "spotifyId") },
+        spotifyTrackId: {
+          in: newTracks.map((track) => track.spotifyTrack.connectOrCreate.create.id),
+        },
       },
     });
+    const existingTrackIds = new Set(existingTracks.map((track) => track.spotifyTrackId));
 
-    // Add the missing tracks to the database
-    const missingTracks = differenceBy(newTracks, existingTracks, "spotifyId");
-    await Promise.all(missingTracks.map((track) => db.track.create({ data: track })));
+    // Add the missing tracks to the database in series to avoid race conditions where multiple
+    // tracks try to create the same album
+    const missingTracks = newTracks.filter(
+      (track) => !existingTrackIds.has(track.spotifyTrack.connectOrCreate.create.id),
+    );
+    await db.$transaction(missingTracks.map((track) => db.track.create({ data: track })));
 
     if (missingTracks.length === limit) {
       // All of the tracks were missing, so load another, larger batch
@@ -237,7 +248,7 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
 
 // POST https://api.spotify.com/v1/me/playlists
 // Only includes fields that we care about
-const CreatePlaylistResponse = z.object({
+const createPlaylistResponse = z.object({
   id: z.string(),
 });
 
@@ -245,11 +256,11 @@ const CreatePlaylistResponse = z.object({
 export async function syncPlaylists(user: User): Promise<void> {
   // Find all labels that don't have a playlist yet
   const newLabels = await db.label.findMany({
-    where: { userId: user.id, playlist: null, generatePlaylist: true },
+    where: { userId: user.id, generatePlaylist: true, playlistId: null },
   });
 
   // Create the new Spotify playlists in parallel
-  const playlists = await Promise.all(
+  await Promise.all(
     newLabels.map(async (label) => {
       // Create a new Spotify playlist for the label
       const newPlaylist = {
@@ -257,10 +268,10 @@ export async function syncPlaylists(user: User): Promise<void> {
         description: `Tracks labeled "${label.name}" by playlist-gen`,
         public: false,
       };
-      const { id: spotifyId } = CreatePlaylistResponse.parse(
+      const { id } = createPlaylistResponse.parse(
         await spotifyFetch(
           user,
-          new Request(`https://api.spotify.com/v1/users/${user.spotifyId}/playlists`, {
+          new Request(`https://api.spotify.com/v1/users/${user.id}/playlists`, {
             method: "POST",
             body: JSON.stringify(newPlaylist),
             headers: {
@@ -269,44 +280,57 @@ export async function syncPlaylists(user: User): Promise<void> {
           }),
         ),
       );
-      return { userId: user.id, spotifyId, labelId: label.id };
+
+      // Link the playlist to the label
+      await db.label.update({
+        where: { id: label.id },
+        data: {
+          playlistId: id,
+        },
+      });
     }),
   );
 
-  // Save the playlists to the database
-  if (playlists.length > 0) {
-    await db.playlist.createMany({ data: playlists });
-  }
-
-  // Load the tracks in preparation for pushing them into the playlists
-  const dbPlaylists = await db.playlist.findMany({
-    where: { userId: user.id },
+  // Load the labels with their tracks in preparation for pushing them into the playlists
+  const labels = await db.label.findMany({
+    where: { userId: user.id, playlistId: { not: null } },
     include: {
-      label: {
+      trackLabels: {
         include: {
-          tracks: {
-            select: { spotifyId: true },
-            orderBy: [{ dateAdded: "desc" }],
+          track: {
+            include: {
+              spotifyTrack: {
+                select: {
+                  id: true,
+                },
+              },
+            },
           },
         },
+        orderBy: [{ track: { createdAt: "desc" } }],
       },
     },
   });
 
   // Push the playlists to Spotify in parallel
   await Promise.all(
-    dbPlaylists.map(async (playlist): Promise<void> => {
+    labels.map(async (label): Promise<void> => {
       const dummyTrackSpotifyId = "41MCdlvXOl62B7Kv86Bb1v";
 
-      let { tracks } = playlist.label;
+      let spotifyTracks = label.trackLabels.map((trackLabel) => trackLabel.track);
 
       // Override the tracks for smart labels
-      const { smartCriteria } = playlist.label;
+      const { smartCriteria } = label;
       if (smartCriteria !== null) {
-        tracks = [];
+        spotifyTracks = [];
         try {
-          tracks = await db.track.findMany({
-            where: { userId: user.id, ...generatePrismaFilter(smartCriteria) },
+          spotifyTracks = await db.track.findMany({
+            where: { ...generatePrismaFilter(smartCriteria), userId: user.id },
+            include: {
+              spotifyTrack: {
+                select: { id: true },
+              },
+            },
           });
         } catch (err) {
           log.error(err);
@@ -318,9 +342,10 @@ export async function syncPlaylists(user: User): Promise<void> {
       // efficient to replace the entire playlist with a single song and then remove it than
       // to query the playlist for all of it's ids, possibly in multiple batches, and then
       // remove all of those ids, possibly in multiple batches
-      const trackSpotifyIds = map(tracks, "spotifyId");
+      const url = `https://api.spotify.com/v1/playlists/${label.playlistId}/tracks`;
+      const ids = spotifyTracks.map((track) => track.spotifyTrack.id);
       for (const [index, spotifyIds] of chunk(
-        trackSpotifyIds.length > 0 ? trackSpotifyIds : [dummyTrackSpotifyId],
+        ids.length > 0 ? ids : [dummyTrackSpotifyId],
         // Send 50 tracks at a time
         50,
       ).entries()) {
@@ -328,25 +353,20 @@ export async function syncPlaylists(user: User): Promise<void> {
         // eslint-disable-next-line no-await-in-loop
         await spotifyFetch(
           user,
-          new Request(
-            `https://api.spotify.com/v1/playlists/${
-              playlist.spotifyId
-            }/tracks?uris=${encodeURIComponent(uris.join(","))}`,
-            {
-              // During the first chunk, send PUT request to replace all previous tracks with the new chunk of tracks
-              // For subsequent chunks, send POST request to append the new chunk of tracks to the existing tracks
-              // to avoid overwriting the chunks that were just uploaded
-              method: index === 0 ? "PUT" : "POST",
-            },
-          ),
+          new Request(`${url}?uris=${encodeURIComponent(uris.join(","))}`, {
+            // During the first chunk, send PUT request to replace all previous tracks with the new chunk of tracks
+            // For subsequent chunks, send POST request to append the new chunk of tracks to the existing tracks
+            // to avoid overwriting the chunks that were just uploaded
+            method: index === 0 ? "PUT" : "POST",
+          }),
         );
       }
 
       // If the playlist needs to be emptied, remove the dummy track that we added to it
-      if (playlist.label.tracks.length === 0) {
+      if (ids.length === 0) {
         await spotifyFetch(
           user,
-          new Request(`https://api.spotify.com/v1/playlists/${playlist.spotifyId}/tracks`, {
+          new Request(url, {
             method: "DELETE",
             body: JSON.stringify({
               tracks: [{ uri: `spotify:track:${dummyTrackSpotifyId}` }],

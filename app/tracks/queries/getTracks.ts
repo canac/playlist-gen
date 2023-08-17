@@ -4,14 +4,14 @@ import { z } from "zod";
 import { generatePrismaFilter } from "app/lib/smartLabel";
 import db from "db";
 
-const GetTracks = z.object({
+const schema = z.object({
   search: z.string().optional(),
   skip: z.number().nonnegative().optional(),
   take: z.number().nonnegative().optional(),
 });
 
 export default resolver.pipe(
-  resolver.zod(GetTracks),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ search, skip = 0, take = 25 }, ctx) => {
     const userId = ctx.session.userId;
@@ -36,10 +36,17 @@ export default resolver.pipe(
           ...paginateArgs,
           where,
           include: {
-            album: true,
-            artists: true,
+            spotifyTrack: {
+              include: {
+                album: true,
+                artists: true,
+              },
+            },
             // Include regular labels, but hide smart labels
-            labels: { where: { smartCriteria: null } },
+            trackLabels: {
+              where: { label: { smartCriteria: null } },
+              include: { label: true },
+            },
           },
           orderBy: [{ dateAdded: "desc" }],
         }),

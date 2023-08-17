@@ -11,7 +11,7 @@ import db from "db";
 
 // POST https://accounts.spotify.com/api/token
 // Only includes fields that we care about
-const TokenResponse = z.object({
+const tokenResponse = z.object({
   access_token: z.string(),
   refresh_token: z.string(),
   expires_in: z.number(),
@@ -19,7 +19,7 @@ const TokenResponse = z.object({
 
 // GET https://api.spotify.com/v1/me
 // Only includes fields that we care about
-const ProfileResponse = z.object({
+const profileResponse = z.object({
   id: z.string(),
   images: z.array(
     z.object({
@@ -62,7 +62,7 @@ export const getServerSideProps = gSSP(async ({ req, ctx }) => {
     access_token: accessToken,
     refresh_token: refreshToken,
     expires_in: expiresIn,
-  } = TokenResponse.parse(await tokenRes.json());
+  } = tokenResponse.parse(await tokenRes.json());
 
   // Use the access token to get the user's id
   const userRes = await fetch("https://api.spotify.com/v1/me", {
@@ -70,12 +70,11 @@ export const getServerSideProps = gSSP(async ({ req, ctx }) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  const profile = ProfileResponse.parse(await userRes.json());
-  const spotifyId = profile.id;
+  const { id, images } = profileResponse.parse(await userRes.json());
 
   // Save the user, avatar URL, and access token to the database
   const updatedFields = {
-    avatarUrl: profile.images[0]?.url ?? null,
+    avatarUrl: images[0]?.url ?? null,
     accessToken,
     refreshToken,
     // expiresIn is the length of the token's validity in seconds
@@ -84,8 +83,8 @@ export const getServerSideProps = gSSP(async ({ req, ctx }) => {
     accessTokenExpiresAt: new Date(Date.now() + (expiresIn - 60) * 1000),
   };
   const { id: userId, role } = await db.user.upsert({
-    where: { spotifyId },
-    create: { spotifyId, role: "USER", ...updatedFields },
+    where: { id },
+    create: { id, role: "USER", ...updatedFields },
     update: updatedFields,
     select: { id: true, role: true },
   });

@@ -20,14 +20,21 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
   const tracksPromise = db.track.findMany({
     where: { userId },
     orderBy: [{ dateAdded: "desc" }],
-    include: { album: true, artists: true },
+    include: {
+      spotifyTrack: {
+        include: {
+          album: true,
+          artists: true,
+        },
+      },
+    },
   });
   const [labels, tracks] = await Promise.all([labelsPromise, tracksPromise]);
   const labelNames = sortBy(uniq(labels.map((label) => label.name)));
-  const trackNames = sortBy(uniq(tracks.map((track) => track.name)));
-  const albumNames = sortBy(uniq(tracks.map((track) => track.album.name)));
+  const trackNames = sortBy(uniq(tracks.map(({ spotifyTrack }) => spotifyTrack.name)));
+  const albumNames = sortBy(uniq(tracks.map(({ spotifyTrack }) => spotifyTrack.album.name)));
   const artistNames = sortBy(
-    uniq(tracks.flatMap((track) => track.artists.map((artist) => artist.name))),
+    uniq(tracks.flatMap(({ spotifyTrack }) => spotifyTrack.artists.map((artist) => artist.name))),
   );
 
   const examples: SearchExample[] = [

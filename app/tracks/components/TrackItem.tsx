@@ -1,18 +1,21 @@
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
 import { Avatar, Text, UnstyledButton, createStyles } from "@mantine/core";
 import { IconTag, IconX } from "@tabler/icons-react";
-import { map } from "lodash";
 import getTracks from "../queries/getTracks";
 import setLabel from "app/labels/mutations/removeLabel";
 import { handleAsyncErrors } from "app/lib/async";
 import { failureNotification } from "app/lib/notification";
-import { Album, Artist, Label, Track } from "db";
+import { Album, Artist, Label, SpotifyTrack, Track, TrackLabel } from "db";
 
 export type TrackItemProps = {
   track: Track & {
-    album: Album;
-    artists: Artist[];
-    labels: Label[];
+    spotifyTrack: SpotifyTrack & {
+      album: Album;
+      artists: Artist[];
+    };
+    trackLabels: (TrackLabel & {
+      label: Label;
+    })[];
   };
 };
 
@@ -62,6 +65,8 @@ export default function TrackItem({ track }: TrackItemProps): JSX.Element {
   const { classes, cx } = useStyles();
   const [setLabelMutation] = useMutation(setLabel);
 
+  const { spotifyTrack } = track;
+
   const removeLabel = async (labelId: number) => {
     try {
       await setLabelMutation({ trackId: track.id, labelId });
@@ -73,11 +78,11 @@ export default function TrackItem({ track }: TrackItemProps): JSX.Element {
 
   return (
     <div className={classes.container}>
-      <Avatar alt={`${track.name} album artwork`} src={track.album.thumbnailUrl} />
+      <Avatar alt={`${spotifyTrack.name} album artwork`} src={spotifyTrack.album.thumbnailUrl} />
       <div className={classes.info}>
         <Text className={cx(classes.overflowEllipsis, classes.titleRow)} size="lg">
-          <span className={classes.title}>{track.name}</span>
-          {track.labels.map((label) => (
+          <span className={classes.title}>{spotifyTrack.name}</span>
+          {track.trackLabels.map(({ label }) => (
             <Text key={label.id} component="span" className={classes.label}>
               <IconTag size="1em" />
               {label.name}
@@ -93,7 +98,7 @@ export default function TrackItem({ track }: TrackItemProps): JSX.Element {
           ))}
         </Text>
         <Text className={classes.overflowEllipsis} color="dimmed" size="sm">
-          {map(track.artists, "name").join(" & ")}
+          {spotifyTrack.artists.map((artist) => artist.name).join(" & ")}
         </Text>
       </div>
     </div>

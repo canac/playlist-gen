@@ -15,7 +15,7 @@ export interface UseLabelToggleInput {
 // Split the tracks into the ones that have the label and the ones that do not
 export const partitionTracks = (tracks: TrackWithRelations[], label: Label) => {
   const [tracksWithLabel, tracksWithoutLabel] = partition(tracks, (track) =>
-    track.labels.some((trackLabel) => trackLabel.id === label.id),
+    track.trackLabels.some((trackLabel) => trackLabel.labelId === label.id),
   );
   return {
     tracksWithLabel,

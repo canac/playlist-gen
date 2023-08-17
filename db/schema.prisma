@@ -13,7 +13,7 @@ generator client {
 // --------------------------------------
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   role      Role     @default(USER)
@@ -21,14 +21,12 @@ model User {
   tokens   Token[]
   sessions Session[]
 
-  spotifyId            String     @unique
   avatarUrl            String?
   accessToken          String
   accessTokenExpiresAt DateTime
   refreshToken         String
-  labels               Label[]
   tracks               Track[]
-  playlist             Playlist[]
+  labels               Label[]
 }
 
 enum Role {
@@ -46,8 +44,8 @@ model Session {
   publicData         String?
   privateData        String?
 
-  user   User? @relation(fields: [userId], references: [id])
-  userId Int?
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
 }
 
 model Token {
@@ -59,8 +57,8 @@ model Token {
   expiresAt   DateTime
   sentTo      String
 
-  user   User @relation(fields: [userId], references: [id])
-  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 
   @@unique([hashedToken, type])
 }
@@ -69,61 +67,70 @@ enum TokenType {
   RESET_PASSWORD
 }
 
+model Track {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId         String
+  spotifyTrack   SpotifyTrack @relation(fields: [spotifyTrackId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  spotifyTrackId String
+  dateAdded      DateTime
+  trackLabels    TrackLabel[]
+
+  @@unique([userId, spotifyTrackId])
+}
+
+model TrackLabel {
+  id      Int   @id @default(autoincrement())
+  track   Track @relation(fields: [trackId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  trackId Int
+  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  labelId Int
+
+  @@unique([trackId, labelId])
+}
+
 model Album {
-  id           String   @id
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  name         String
-  thumbnailUrl String
-  dateReleased DateTime
-  tracks       Track[]
+  id            String         @id
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  name          String
+  thumbnailUrl  String
+  dateReleased  DateTime
+  spotifyTracks SpotifyTrack[]
 }
 
 model Artist {
+  id            String         @id
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  name          String
+  genres        String[]
+  spotifyTracks SpotifyTrack[]
+}
+
+model SpotifyTrack {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String
-  genres    String[]
-  tracks    Track[]
-}
-
-model Track {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  spotifyId String   @unique
-  name      String
   albumId   String
   album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   artists   Artist[]
-  dateAdded DateTime
   explicit  Boolean
-  labels    Label[]
+  tracks    Track[]
 }
 
 model Label {
-  id               Int       @id @default(autoincrement())
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  userId           Int
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id               Int          @id @default(autoincrement())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name             String
-  tracks           Track[]
   smartCriteria    String?
-  generatePlaylist Boolean   @default(true)
-  playlist         Playlist?
-}
-
-model Playlist {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  spotifyId String   @unique
-  labelId   Int      @unique
-  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  generatePlaylist Boolean      @default(true)
+  playlistId       String?      @unique
+  trackLabels      TrackLabel[]
 }

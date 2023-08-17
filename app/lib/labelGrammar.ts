@@ -195,12 +195,14 @@ const grammar = new Grammar(
         { value: string },
         { date: Date, unit: Unit }
       ]): TrackWhereInput => ({
-        album: {
-          dateReleased: makeAbsoluteComparison(
-            operator.value,
-            date.date,
-            date.unit
-          ),
+        spotifyTrack: {
+          album: {
+            dateReleased: makeAbsoluteComparison(
+              operator.value,
+              date.date,
+              date.unit
+            ),
+          },
         },
       }),
     },
@@ -216,29 +218,35 @@ const grammar = new Grammar(
         { value: string },
         { amount: number, unit: Unit }
       ]): TrackWhereInput => ({
-        album: {
-          dateReleased: makeRelativeComparison(
-            operator.value,
-            date.amount,
-            date.unit
-          ),
+        spotifyTrack: {
+          album: {
+            dateReleased: makeRelativeComparison(
+              operator.value,
+              date.amount,
+              date.unit
+            ),
+          },
         },
       }),
     },
     {
       name: "value",
       symbols: [new TokenSymbol("cleanKw")],
-      postprocess: (_): TrackWhereInput => ({ explicit: false }),
+      postprocess: (_): TrackWhereInput => ({
+        spotifyTrack: { explicit: false },
+      }),
     },
     {
       name: "value",
       symbols: [new TokenSymbol("explicitKw")],
-      postprocess: (_): TrackWhereInput => ({ explicit: true }),
+      postprocess: (_): TrackWhereInput => ({
+        spotifyTrack: { explicit: true },
+      }),
     },
     {
       name: "value",
       symbols: [new TokenSymbol("unlabeledKw")],
-      postprocess: (_): TrackWhereInput => ({ labels: { none: {} } }),
+      postprocess: (_): TrackWhereInput => ({ trackLabels: { none: {} } }),
     },
     {
       name: "value",
@@ -247,7 +255,7 @@ const grammar = new Grammar(
         unknown,
         { value: string }
       ]): TrackWhereInput => ({
-        name: { contains: name.value, mode: "insensitive" },
+        spotifyTrack: { name: { contains: name.value, mode: "insensitive" } },
       }),
     },
     {
@@ -256,7 +264,9 @@ const grammar = new Grammar(
       postprocess: ([_, name]: [
         unknown,
         { value: string }
-      ]): TrackWhereInput => ({ labels: { some: { name: name.value } } }),
+      ]): TrackWhereInput => ({
+        trackLabels: { some: { label: { name: name.value } } },
+      }),
     },
     {
       name: "value",
@@ -264,7 +274,9 @@ const grammar = new Grammar(
       postprocess: ([_, name]: [
         unknown,
         { value: string }
-      ]): TrackWhereInput => ({ album: { name: name.value } }),
+      ]): TrackWhereInput => ({
+        spotifyTrack: { album: { name: name.value } },
+      }),
     },
     {
       name: "value",
@@ -272,7 +284,9 @@ const grammar = new Grammar(
       postprocess: ([_, name]: [
         unknown,
         { value: string }
-      ]): TrackWhereInput => ({ artists: { some: { name: name.value } } }),
+      ]): TrackWhereInput => ({
+        spotifyTrack: { artists: { some: { name: name.value } } },
+      }),
     },
     {
       name: "value",

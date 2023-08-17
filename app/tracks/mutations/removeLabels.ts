@@ -3,7 +3,7 @@ import { z } from "zod";
 import { primaryKey } from "app/lib/zodTypes";
 import db from "db";
 
-const RemoveLabels = z.object({
+const schema = z.object({
   // The ids of the tracks to remove the label from
   trackIds: z.array(primaryKey),
 
@@ -15,37 +15,18 @@ const RemoveLabels = z.object({
  * Remove a label from multiple tracks.
  */
 export default resolver.pipe(
-  resolver.zod(RemoveLabels),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ trackIds, labelId }, ctx) => {
     const userId = ctx.session.userId;
 
-    // Ensure that the user owns the label
-    const verifyLabel = db.label.findFirstOrThrow({
-      where: { id: labelId, userId },
-      select: { id: true },
+    // Remove the labels from the tracks
+    await db.trackLabel.deleteMany({
+      where: {
+        track: { userId, id: { in: trackIds } },
+        labelId,
+      },
     });
-
-    // Filter out any tracks not owned by the user
-    const verifyTracks = db.track.findMany({
-      where: { id: { in: trackIds }, userId },
-      select: { id: true },
-    });
-    const [_, tracks] = await Promise.all([verifyLabel, verifyTracks]);
-
-    // Link the tracks to the label
-    await Promise.all(
-      tracks.map((track) =>
-        db.track.update({
-          where: { id: track.id },
-          data: {
-            labels: {
-              disconnect: { id: labelId },
-            },
-          },
-        }),
-      ),
-    );
 
     return { success: true };
   },

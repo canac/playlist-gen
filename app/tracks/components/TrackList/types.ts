@@ -1,7 +1,15 @@
-import { Album, Artist, Label, Track } from "db";
+import { Album, Artist, Label, SpotifyTrack, Track, TrackLabel } from "db";
 
-export interface TrackWithRelations extends Track {
+export interface SpotifyTrackWithRelations extends SpotifyTrack {
   album: Album;
   artists: Artist[];
-  labels: Label[];
+}
+
+export interface TrackLabelWithRelations extends TrackLabel {
+  label: Label;
+}
+
+export interface TrackWithRelations extends Track {
+  spotifyTrack: SpotifyTrackWithRelations;
+  trackLabels: TrackLabelWithRelations[];
 }

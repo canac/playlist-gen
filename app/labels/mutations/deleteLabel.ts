@@ -1,10 +1,9 @@
 import { resolver } from "@blitzjs/rpc";
-import { NotFoundError } from "blitz";
 import { z } from "zod";
 import { primaryKey } from "app/lib/zodTypes";
 import db from "db";
 
-const DeleteLabel = z.object({
+const schema = z.object({
   // The id of the label to delete
   labelId: primaryKey,
 });
@@ -13,18 +12,15 @@ const DeleteLabel = z.object({
  * Delete an existing label.
  */
 export default resolver.pipe(
-  resolver.zod(DeleteLabel),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ labelId }, ctx) => {
     const userId = ctx.session.userId;
 
     // Delete the label
-    const { count } = await db.label.deleteMany({
+    await db.label.delete({
       where: { id: labelId, userId },
     });
-    if (count === 0) {
-      throw new NotFoundError();
-    }
 
     return { success: true };
   },

@@ -6,32 +6,43 @@ const makeLabel = (id: number): Label => ({
   id,
   createdAt: new Date(),
   updatedAt: new Date(),
-  userId: 1,
+  userId: "user:1",
   name: `Label ${id}`,
   smartCriteria: null,
   generatePlaylist: true,
+  playlistId: null,
 });
 
 const makeTrack = (id: number, labels: Label[]): TrackWithRelations => ({
   id,
   createdAt: new Date(),
   updatedAt: new Date(),
-  userId: 1,
-  spotifyId: `track:${id}`,
-  name: `Track ${id}`,
-  albumId: "album:1",
+  userId: "user:1",
+  spotifyTrackId: `track:${id}`,
   dateAdded: new Date(),
-  explicit: false,
-  album: {
-    id: `album:1`,
+  spotifyTrack: {
+    id: `track:${id}`,
     createdAt: new Date(),
     updatedAt: new Date(),
-    name: `Album 1`,
-    thumbnailUrl: "",
-    dateReleased: new Date(),
+    name: `Track ${id}`,
+    albumId: "album:1",
+    album: {
+      id: "album:1",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: "Album 1",
+      thumbnailUrl: "",
+      dateReleased: new Date(),
+    },
+    artists: [],
+    explicit: false,
   },
-  artists: [],
-  labels,
+  trackLabels: labels.map((label) => ({
+    id: id * 10 + label.id,
+    trackId: id,
+    labelId: label.id,
+    label,
+  })),
 });
 
 describe("partitionTracks", () => {

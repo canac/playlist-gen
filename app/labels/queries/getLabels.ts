@@ -4,27 +4,27 @@ import { z } from "zod";
 import { generatePrismaFilter } from "app/lib/smartLabel";
 import db from "db";
 
-const GetLabels = z.object({
+const schema = z.object({
   includeSmartLabels: z.boolean().default(true),
   skip: z.number().nonnegative().optional(),
   take: z.number().nonnegative().optional(),
 });
 
 // Count the number of tracks matching a smart label
-async function countTracks(userId: number, smartCriteria: string): Promise<number> {
+async function countTracks(userId: string, smartCriteria: string): Promise<number> {
   const where = generatePrismaFilter(smartCriteria);
   if (where === null) {
     return 0;
   }
   const tracks = await db.track.findMany({
-    where: { userId, ...where },
+    where: { ...where, userId },
     select: { id: true },
   });
   return tracks.length;
 }
 
 export default resolver.pipe(
-  resolver.zod(GetLabels),
+  resolver.zod(schema),
   resolver.authorize(),
   async ({ includeSmartLabels, skip = 0, take = 25 }, ctx) => {
     const userId = ctx.session.userId;
@@ -53,7 +53,7 @@ export default resolver.pipe(
       labels.map(async ({ _count, ...label }) => {
         const numTracks =
           label.smartCriteria === null
-            ? _count.tracks
+            ? _count.trackLabels
             : await countTracks(userId, label.smartCriteria);
         return { ...label, numTracks };
       }),
