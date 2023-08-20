@@ -19,6 +19,7 @@ import { resolves } from "app/lib/async";
 import { failureNotification, successNotification } from "app/lib/notification";
 import pullTracks from "app/spotify/mutations/pullTracks";
 import pushTracks from "app/spotify/mutations/pushTracks";
+import getSearchExamples from "app/tracks/queries/getSearchExamples";
 import getTracks from "app/tracks/queries/getTracks";
 
 const Layout: BlitzLayout<{
@@ -73,7 +74,10 @@ const Layout: BlitzLayout<{
                   onClick={async () => {
                     const succeeded = await resolves(pullTracksMutation());
                     if (succeeded) {
-                      await invalidateQuery(getTracks);
+                      await Promise.all([
+                        invalidateQuery(getTracks),
+                        invalidateQuery(getSearchExamples),
+                      ]);
                       successNotification("Pulling tracks succeeded!");
                     } else {
                       failureNotification("Pulling tracks failed!");

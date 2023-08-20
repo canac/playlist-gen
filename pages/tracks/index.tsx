@@ -34,7 +34,10 @@ export const TracksList = () => {
     {
       data: { examples },
     },
-  ] = useQuery(getSearchExamples, {});
+  ] = useQuery(getSearchExamples, null, {
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
   const pageCount = Math.ceil(count / ITEMS_PER_PAGE);
 
   const searchOptions = examples.map(({ value, description }) => {
