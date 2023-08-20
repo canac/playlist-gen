@@ -1,20 +1,36 @@
-import { HTMLAttributes, useEffect } from "react";
+import { assert } from "blitz";
+import { HTMLAttributes, createContext, useContext, useEffect } from "react";
 import { UseMultiSelectInput, UseMultiSelectResult, useMultiSelect } from "./useMultiSelect";
 
-export type GetContainerProps = (props: HTMLAttributes<HTMLElement>) => HTMLAttributes<HTMLElement>;
 export type GetItemProps<Item extends {}> = (item: Item) => HTMLAttributes<HTMLElement>;
+export type HandleKeyDown = (event: KeyboardEvent) => void;
 
-export interface RenderProps<Item extends {}> extends UseMultiSelectResult<Item> {
-  getContainerProps: GetContainerProps;
+export interface MultiSelectListContext<Item extends {}> extends UseMultiSelectResult<Item> {
   getItemProps: GetItemProps<Item>;
+  handleKeyDown: HandleKeyDown;
 }
 
 export interface MultiSelectListProps<Item extends {}> extends UseMultiSelectInput<Item> {
-  render: React.FC<RenderProps<Item>>;
+  render: React.FC<MultiSelectListContext<Item>>;
 }
 
+export const MultiSelectContext = createContext<MultiSelectListContext<any> | null>(null);
+MultiSelectContext.displayName = "MultiSelectContext";
+
+export const MultiSelectProvider = MultiSelectContext.Provider;
+export const MultiSelectConsumer = MultiSelectContext.Consumer;
+
+export const useMultiSelectContext = <Item extends {}>(): MultiSelectListContext<Item> => {
+  const context = useContext<MultiSelectListContext<Item> | null>(MultiSelectContext);
+  assert(
+    context,
+    "useMultiSelectContext() must be called from within a child of a <MultiSelectList> component.",
+  );
+  return context;
+};
+
 const MultiSelectList = <Item extends {}>({ render, ...props }: MultiSelectListProps<Item>) => {
-  const context = useMultiSelect(props);
+  const result = useMultiSelect(props);
   const {
     setActiveItem,
     isItemSelected,
@@ -31,9 +47,9 @@ const MultiSelectList = <Item extends {}>({ render, ...props }: MultiSelectListP
     continueDrag,
     commitDrag,
     abortDrag,
-  } = context;
+  } = result;
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
     abortDrag();
 
     const selecting = event.shiftKey ? !event.ctrlKey : null;
@@ -97,20 +113,6 @@ const MultiSelectList = <Item extends {}>({ render, ...props }: MultiSelectListP
     }
   };
 
-  // Return the props that should be applied to the root component to enable interactivity
-  // The other props for the container should be passed in to ensure that event listeners aren't overwritten
-  const getContainerProps: GetContainerProps = (props) => {
-    return {
-      tabIndex: 0,
-      ...props,
-      onKeyDown: (event) => {
-        // Call both keydown handlers if one was provided
-        props.onKeyDown?.(event);
-        handleKeyDown(event);
-      },
-    };
-  };
-
   // Return the props that should be applied to each item component to enable interactivity
   const getItemProps: GetItemProps<Item> = (item) => {
     return {
@@ -119,6 +121,7 @@ const MultiSelectList = <Item extends {}>({ render, ...props }: MultiSelectListP
     };
   };
 
-  return render({ ...context, getContainerProps, getItemProps });
+  const context = { ...result, getItemProps, handleKeyDown };
+  return <MultiSelectProvider value={context}>{render(context)}</MultiSelectProvider>;
 };
 export default MultiSelectList;

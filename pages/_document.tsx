@@ -19,7 +19,13 @@ class MyDocument extends Document {
 
   render() {
     return (
-      <Html lang="en">
+      <Html
+        lang="en"
+        style={{
+          // Prevent focused elements from being obscured by the sticky header when navigating with tab
+          scrollPaddingTop: "80px",
+        }}
+      >
         <Head />
         <body>
           <Main />
