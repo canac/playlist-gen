@@ -69,7 +69,9 @@ async function spotifyFetch(user: User, req: Request): Promise<unknown> {
   const res = await fetch(authorizedReq);
   log.info(`Status: ${res.status}`);
 
-  const body: unknown = await res.json();
+  const body: unknown = res.headers.get("Content-Type")?.startsWith("application/json")
+    ? await res.json()
+    : await res.text();
   if (!res.ok) {
     log.error("Spotify API error:");
     log.error(body);
@@ -377,6 +379,20 @@ export async function syncPlaylists(user: User): Promise<void> {
           }),
         );
       }
+    }),
+  );
+}
+
+// Delete a user's playlist, which is equivalent to unfollowing it
+// https://developer.spotify.com/documentation/web-api/concepts/playlists#following-and-unfollowing-a-playlist
+export async function deletePlaylist(user: User, playlistId: string): Promise<void> {
+  await spotifyFetch(
+    user,
+    new Request(`https://api.spotify.com/v1/playlists/${playlistId}/followers`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
     }),
   );
 }

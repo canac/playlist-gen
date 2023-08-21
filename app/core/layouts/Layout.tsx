@@ -15,6 +15,8 @@ import React from "react";
 import { TooltipActionIcon } from "../components/TooltipActionIcon";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import logout from "app/auth/mutations/logout";
+import getLabel from "app/labels/queries/getLabel";
+import getLabels from "app/labels/queries/getLabels";
 import { resolves } from "app/lib/async";
 import { failureNotification, successNotification } from "app/lib/notification";
 import pullTracks from "app/spotify/mutations/pullTracks";
@@ -95,6 +97,7 @@ const Layout: BlitzLayout<{
                   onClick={async () => {
                     const succeeded = await resolves(pushTracksMutation());
                     if (succeeded) {
+                      await Promise.all([invalidateQuery(getLabels), invalidateQuery(getLabel)]);
                       successNotification("Pushing playlists succeeded!");
                     } else {
                       failureNotification("Pushing playlists failed!");
