@@ -1,4 +1,4 @@
-import { chunk, difference, map, uniq } from "lodash";
+import { chunk, difference, map, range, uniq } from "lodash";
 import log from "loglevel";
 import { z } from "zod";
 import { env } from "../lib/env";
@@ -109,6 +109,7 @@ const tracksResponse = z.object({
       }),
     }),
   ),
+  total: z.number(),
 });
 
 // GET https://api.spotify.com/v1/artists
@@ -127,44 +128,46 @@ type SpotifyArtist = Pick<Artist, "id" | "name" | "genres">;
 
 // Load the name and genre of artists from Spotify
 async function lookupArtists(user: User, artistIds: string[]): Promise<SpotifyArtist[]> {
-  const artistGenres: SpotifyArtist[] = [];
-
-  // Load the artists' information 50 at a time
-  for (const chunkIds of chunk(artistIds, 50)) {
-    const { artists } = artistsResponse.parse(
-      await spotifyFetch(
-        user,
-        new Request(
-          `https://api.spotify.com/v1/artists?ids=${encodeURIComponent(chunkIds.join(","))}`,
-        ),
-      ),
-    );
-    artistGenres.push(...artists);
-  }
-
-  return artistGenres;
+  // Load the artists' information in parallel 50 at a time
+  const artistChunks = await Promise.all(
+    chunk(artistIds, 50).map(
+      async (chunkIds) =>
+        artistsResponse.parse(
+          await spotifyFetch(
+            user,
+            new Request(
+              `https://api.spotify.com/v1/artists?ids=${encodeURIComponent(chunkIds.join(","))}`,
+            ),
+          ),
+        ).artists,
+    ),
+  );
+  return artistChunks.flat();
 }
 
 // Pull the user's favorite tracks from Spotify into the database
 export async function syncFavoriteTracks(user: User): Promise<void> {
-  // At first, only load five tracks because the user is unlikely to have new favorites since the last time and we don't
-  // want to transfer lots of new tracks unnecessarily
-  let offset = 0;
-  let limit = 5;
+  const favoriteTrackIds: string[] = [];
 
-  /* eslint-disable no-await-in-loop */
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    // Get the user's most recent favorite tracks from Spotify
-    const tracks = tracksResponse.parse(
-      await spotifyFetch(
-        user,
-        new Request(`https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${limit}`),
-      ),
-    );
+  // Load the first page to get the total number of tracks, then start loading the rest of the pages in parallel
+  const pageSize = 50;
+  const baseUrl = `https://api.spotify.com/v1/me/tracks?limit=${pageSize}`;
+  const firstPage = tracksResponse.parse(await spotifyFetch(user, new Request(baseUrl)));
+  const pages = [
+    Promise.resolve(firstPage),
+    ...range(pageSize, firstPage.total, pageSize).map(async (offset) =>
+      tracksResponse.parse(await spotifyFetch(user, new Request(`${baseUrl}&offset=${offset}`))),
+    ),
+  ];
+
+  for (const page of pages) {
+    // Only wait for the current page to load, the other pages may still be loading in parallel
+    const { items } = await page;
+
+    favoriteTrackIds.push(...items.map((item) => item.track.id));
 
     // Create the artists that the tracks reference
-    const incomingArtistIds = uniq(tracks.items.flatMap((item) => map(item.track.artists, "id")));
+    const incomingArtistIds = uniq(items.flatMap((item) => map(item.track.artists, "id")));
     const existingArtistIds = map(
       await db.artist.findMany({
         where: { id: { in: incomingArtistIds } },
@@ -179,7 +182,7 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
     });
 
     // Create the tracks themselves
-    const newTracks = tracks.items.map(
+    const newTracks = items.map(
       ({ track, added_at }) =>
         ({
           user: { connect: { id: user.id } },
@@ -234,18 +237,17 @@ export async function syncFavoriteTracks(user: User): Promise<void> {
       (track) => !existingTrackIds.has(track.spotifyTrack.connectOrCreate.create.id),
     );
     await db.$transaction(missingTracks.map((track) => db.track.create({ data: track })));
-
-    if (missingTracks.length === limit) {
-      // All of the tracks were missing, so load another, larger batch
-      offset += limit;
-      limit = 25;
-    } else {
-      // Some of the tracks weren't missing, so everything after this batch
-      // will already exist in the database
-      break;
-    }
   }
-  /* eslint-enable no-await-in-loop */
+
+  // Remove tracks that have been unfavorited
+  await db.track.deleteMany({
+    where: {
+      userId: user.id,
+      spotifyTrackId: {
+        notIn: favoriteTrackIds,
+      },
+    },
+  });
 }
 
 // POST https://api.spotify.com/v1/me/playlists
@@ -351,11 +353,13 @@ export async function syncPlaylists(user: User): Promise<void> {
         // Send 50 tracks at a time
         50,
       ).entries()) {
-        const uris = spotifyIds.map((spotifyId) => `spotify:track:${spotifyId}`);
         // eslint-disable-next-line no-await-in-loop
         await spotifyFetch(
           user,
-          new Request(`${url}?uris=${encodeURIComponent(uris.join(","))}`, {
+          new Request(url, {
+            body: JSON.stringify({
+              uris: spotifyIds.map((spotifyId) => `spotify:track:${spotifyId}`),
+            }),
             // During the first chunk, send PUT request to replace all previous tracks with the new chunk of tracks
             // For subsequent chunks, send POST request to append the new chunk of tracks to the existing tracks
             // to avoid overwriting the chunks that were just uploaded
