@@ -31,7 +31,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
           onChange={(event) => setDeletePlaylist(event.target.checked)}
         />
       )}
-      <Group position="right">
+      <Group justify="flex-end">
         <Button variant="default" onClick={closeModal}>
           Cancel
         </Button>

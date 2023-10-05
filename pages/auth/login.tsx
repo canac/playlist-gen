@@ -1,6 +1,7 @@
 import { BlitzPage } from "@blitzjs/next";
-import { Box, Button } from "@mantine/core";
+import { Button } from "@mantine/core";
 import { InferGetServerSidePropsType } from "next";
+import classes from "./login.module.css";
 import { gSSP } from "app/blitz-server";
 import Layout from "app/core/layouts/Layout";
 import { env } from "app/lib/env";
@@ -50,11 +51,11 @@ const LoginPage: BlitzPage = ({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (
     <Layout title="Log In">
-      <Box sx={{ textAlign: "center", paddingTop: "1em" }}>
+      <div className={classes.container}>
         <Button component="a" href={spotifyOauthUrl}>
           Login with Spotify
         </Button>
-      </Box>
+      </div>
     </Layout>
   );
 };

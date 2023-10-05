@@ -1,0 +1,18 @@
+.navbar {
+  display: flex;
+  overflow: scroll;
+  flex-direction: column;
+}
+
+.sidebarSpacing {
+  flex: 1;
+}
+
+.currentPage {
+  flex: 1;
+  text-align: center;
+}
+
+.currentPageInvalid {
+  color: var(--mantine-color-red-9);
+}

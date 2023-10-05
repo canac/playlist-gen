@@ -9,7 +9,7 @@ export interface TooltipActionIconProps extends ActionIconProps {
 const _TooltipActionIcon = forwardRef<HTMLButtonElement, TooltipActionIconProps>(
   ({ label, ...others }, ref) => (
     <Tooltip label={label}>
-      <ActionIcon component="button" aria-label={label} ref={ref} {...others} />
+      <ActionIcon aria-label={label} ref={ref} {...others} />
     </Tooltip>
   ),
 );

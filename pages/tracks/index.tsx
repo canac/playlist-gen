@@ -1,10 +1,11 @@
 import { BlitzPage } from "@blitzjs/next";
 import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
-import { Autocomplete, Box, Pagination, Text, useMantineTheme } from "@mantine/core";
+import { Center, Combobox, Pagination, Text, TextInput, useCombobox } from "@mantine/core";
 import { IconReload, IconSearch } from "@tabler/icons-react";
 import { assert } from "blitz";
 import { useRouter } from "next/router";
 import { Suspense, useState } from "react";
+import classes from "./index.module.css";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import Layout from "app/core/layouts/Layout";
 import getLabels from "app/labels/queries/getLabels";
@@ -40,69 +41,100 @@ export const TracksList = () => {
   });
   const pageCount = Math.ceil(count / ITEMS_PER_PAGE);
 
-  const searchOptions = examples.map(({ value, description }) => {
-    // Break the search query into the tail (the incomplete search term) and
-    // the head (the rest of the search)
-    const matches = /^(.*?[!(]*)([\S]*)$/.exec(search);
-    const searchHead = matches && matches[1];
-    assert(typeof searchHead === "string", "Failed to match search");
-
-    return {
-      value: `${searchHead}${value}`,
-      label: (
-        <Text>
-          {searchHead.length === 0 ? "" : "... "}
-          {value}
-          <Text component="span" color="dimmed" size="sm" pl="0.5em">
-            {description}
-          </Text>
-        </Text>
-      ),
-    };
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
   });
 
-  const theme = useMantineTheme();
+  const searchOptions = examples
+    .map(({ value, description }) => {
+      // Break the search query into the tail (the incomplete search term) and
+      // the head (the rest of the search)
+      const matches = /^(.*?[!(]*)([\S]*)$/.exec(search);
+      const searchHead = matches && matches[1];
+      assert(typeof searchHead === "string", "Failed to match search");
+
+      return {
+        value: `${searchHead}${value}`,
+        label: (
+          <Text size="sm">
+            {searchHead.length === 0 ? "" : "... "}
+            {value}
+            <Text span c="dimmed" pl="xs">
+              {description}
+            </Text>
+          </Text>
+        ),
+      };
+    })
+    .filter(({ value }) => value.toLowerCase().includes(search))
+    .slice(0, 10);
 
   return (
     <div>
-      <Box sx={{ display: "flex", gap: "1em", paddingBottom: "1em" }}>
-        <Autocomplete
-          label="Search"
-          rightSection={<IconSearch />}
-          data={searchOptions}
-          limit={10}
-          value={search}
-          error={result.error?.message}
-          onChange={setSearch}
-          styles={(theme) => ({
-            item: {
-              padding: theme.spacing.xs,
-            },
-          })}
-          sx={{ flex: 2 }}
-        />
+      <div className={classes.headerContainer}>
+        <Combobox
+          store={combobox}
+          onOptionSubmit={(search) => {
+            setSearch(search);
+            combobox.closeDropdown();
+          }}
+          classNames={{
+            option: classes.comboboxOption,
+          }}
+          // Make the dropdown options scroll under the AppShell header
+          zIndex={50}
+        >
+          <Combobox.Target>
+            <TextInput
+              className={classes.searchBox}
+              label="Search"
+              rightSection={<IconSearch />}
+              value={search}
+              onChange={(event) => {
+                setSearch(event.currentTarget.value);
+                combobox.openDropdown();
+                combobox.updateSelectedOptionIndex();
+              }}
+              onClick={() => combobox.openDropdown()}
+              onFocus={() => combobox.openDropdown()}
+              onBlur={() => combobox.closeDropdown()}
+              error={result.error?.message}
+            />
+          </Combobox.Target>
+          {searchOptions.length > 0 && (
+            <Combobox.Dropdown>
+              <Combobox.Options>
+                {searchOptions.map(({ label, value }) => (
+                  <Combobox.Option value={value} key={value}>
+                    {label}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            </Combobox.Dropdown>
+          )}
+        </Combobox>
         <TooltipActionIcon
+          className={classes.refresh}
           label="Refresh"
+          variant="default"
           size="lg"
           onClick={() => refetch()}
           disabled={isLoading || typeof result.error !== "undefined"}
-          sx={{
-            marginTop: `${theme.lineHeight}em`,
-          }}
         >
           <IconReload />
         </TooltipActionIcon>
-      </Box>
+      </div>
       <TrackList tracks={tracks} labels={labels} />
       {pageCount > 1 || page > 1 ? (
-        <Pagination
-          total={pageCount}
-          withEdges
-          position="center"
-          p="lg"
-          value={page}
-          onChange={(page) => handleAsyncErrors(router.push({ query: { page } }))}
-        />
+        <Center>
+          <Pagination
+            total={pageCount}
+            withEdges
+            p="lg"
+            value={page}
+            onChange={(page) => handleAsyncErrors(router.push({ query: { page } }))}
+          />
+        </Center>
       ) : null}
     </div>
   );

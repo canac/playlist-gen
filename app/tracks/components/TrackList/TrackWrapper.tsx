@@ -1,23 +1,12 @@
-import { createStyles } from "@mantine/core";
+import clsx from "clsx";
 import { useEffect, useRef } from "react";
 import { useMultiSelectContext } from "../MultiSelectList/MultiSelectList";
 import TrackItem from "../TrackItem";
+import classes from "./TrackWrapper.module.css";
 import { TrackWithRelations } from "./types";
 
-const useStyles = createStyles((theme) => ({
-  item: {
-    borderLeft: "4px solid transparent",
-  },
-  itemSelected: {
-    backgroundColor: theme.colors.blue[1],
-  },
-  itemActive: {
-    borderLeftColor: theme.colors.blue[5],
-  },
-}));
-
-// Polyfill for the nonstandard Element.scrollIntoViewIfNeeded
-// stickyHeaderHeight is the height of the global sticky header
+// Inspired by the nonstandard Element.scrollIntoViewIfNeeded
+// stickyHeaderHeight is the height in pixels of the global sticky header
 const scrollIntoViewIfNeeded = (element: HTMLElement, stickyHeaderHeight: number) => {
   const observer = new IntersectionObserver(
     ([entry]) => {
@@ -41,8 +30,6 @@ interface TrackWrapperProps {
 }
 
 const TrackWrapper: React.FC<TrackWrapperProps> = ({ track }) => {
-  const { classes, cx } = useStyles();
-
   const { isItemSelected, isActiveItem, getItemProps } =
     useMultiSelectContext<TrackWithRelations>();
   const isActive = isActiveItem(track);
@@ -59,9 +46,9 @@ const TrackWrapper: React.FC<TrackWrapperProps> = ({ track }) => {
   return (
     <div
       ref={ref}
-      className={cx(classes.item, {
-        [classes.itemSelected]: isSelected,
-        [classes.itemActive]: isActive,
+      className={clsx(classes.item, {
+        [classes.itemSelected!]: isSelected,
+        [classes.itemActive!]: isActive,
       })}
       {...getItemProps(track)}
     >

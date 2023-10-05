@@ -1,5 +1,5 @@
 import { BlitzPage } from "@blitzjs/next";
-import { Box, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
 import { InferGetServerSidePropsType } from "next";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -108,13 +108,11 @@ const OauthCallbackPage: BlitzPage = (
 
   return (
     <Layout title="Log In">
-      <Box sx={{ margin: "1em" }}>
-        <Text>Logging you in...</Text>
-        <Text>
-          Click <Link href={redirectUri}>here</Link> to return to the site if you are not redirected
-          automatically.
-        </Text>
-      </Box>
+      <Text>Logging you in...</Text>
+      <Text>
+        Click <Link href={redirectUri}>here</Link> to return to the site if you are not redirected
+        automatically.
+      </Text>
     </Layout>
   );
 };

@@ -1,0 +1,40 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-sm);
+  gap: var(--mantine-spacing-md);
+}
+
+.info {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  white-space: nowrap;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+}
+
+.title {
+  margin-right: var(--mantine-spacing-lg);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  padding: calc(rem(2.5)) calc(rem(5));
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-green-3);
+  font-size: var(--mantine-font-size-sm);
+  gap: rem(4);
+}
+
+.deleteIcon {
+  cursor: pointer;
+  line-height: 0;
+}

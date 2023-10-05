@@ -1,0 +1,11 @@
+.item {
+  border-left: rem(4) solid transparent;
+}
+
+.itemSelected {
+  background-color: var(--mantine-color-blue-1);
+}
+
+.itemActive {
+  border-left-color: var(--mantine-color-blue-5);
+}

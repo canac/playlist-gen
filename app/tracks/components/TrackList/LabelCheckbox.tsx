@@ -1,6 +1,7 @@
-import { Checkbox, Loader, createStyles } from "@mantine/core";
+import { Checkbox, Loader } from "@mantine/core";
 import { IconTag } from "@tabler/icons-react";
 import { useMemo } from "react";
+import classes from "./LabelCheckbox.module.css";
 import { TrackWithRelations } from "./types";
 import { partitionTracks, useLabelToggle } from "./useLabelToggle";
 import { handleAsyncErrors } from "app/lib/async";
@@ -12,25 +13,11 @@ interface LabelCheckboxProps {
   keyboardIndex?: number;
 }
 
-const useStyles = createStyles((theme) => ({
-  checkbox: {
-    backgroundColor: theme.colors.gray[1],
-    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-    borderRadius: theme.radius.md,
-  },
-  label: {
-    display: "flex",
-    gap: "0.5ch",
-    alignItems: "center",
-  },
-}));
-
 export default function LabelCheckbox({
   label,
   selectedTracks,
   keyboardIndex,
 }: LabelCheckboxProps): JSX.Element {
-  const { classes } = useStyles();
   const { toggleLabel, isToggling } = useLabelToggle();
 
   const { tracksWithLabel, tracksWithoutLabel } = useMemo(
@@ -46,7 +33,7 @@ export default function LabelCheckbox({
       key={label.id}
       label={
         <span className={classes.label}>
-          {isToggling ? <Loader size="1em" /> : <IconTag size="1em" />}
+          {isToggling ? <Loader size="1rem" /> : <IconTag size="1rem" />}
           {label.name}
           <span>{typeof keyboardIndex !== "undefined" && `(${keyboardIndex})`}</span>
         </span>

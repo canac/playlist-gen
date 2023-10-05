@@ -1,0 +1,26 @@
+.form {
+  display: flex;
+  width: rem(400);
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.title {
+  flex: 1;
+}
+
+.closeIcon {
+  color: var(--mantine-color-gray-5);
+}
+
+.submit {
+  width: rem(160);
+  align-self: center;
+  margin-bottom: var(--mantine-spacing-md);
+}

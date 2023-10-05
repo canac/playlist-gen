@@ -1,0 +1,4 @@
+.container {
+  padding-top: var(--mantine-spacing-md);
+  text-align: center;
+}

@@ -1,7 +1,7 @@
 import { BlitzLayout } from "@blitzjs/next";
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
-import { ActionIcon, AppShell, Avatar, Box, Button, Header, Menu, Title } from "@mantine/core";
+import { ActionIcon, AppShell, Avatar, Button, Menu, Title, rem } from "@mantine/core";
 import {
   IconCloudDownload,
   IconCloudUpload,
@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { TooltipActionIcon } from "../components/TooltipActionIcon";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import classes from "./Layout.module.css";
 import logout from "app/auth/mutations/logout";
 import getLabel from "app/labels/queries/getLabel";
 import getLabels from "app/labels/queries/getLabels";
@@ -44,105 +45,93 @@ const Layout: BlitzLayout<{
 
       <AppShell
         padding="md"
-        header={
-          <Header
-            height={80}
-            p="md"
-            withBorder={false}
-            styles={(theme) => ({
-              root: {
-                backgroundColor: theme.colors.blue[5],
-              },
-            })}
-            sx={{ display: "flex", gap: "1em", alignItems: "center" }}
-          >
-            <Title order={1} color="white">
-              Playlist Generator
-            </Title>
-            {user && (
-              <>
-                <Link href={Routes.TracksPage()}>
-                  <Button>Tracks</Button>
-                </Link>
-                <Link href={Routes.LabelsPage()}>
-                  <Button>Labels</Button>
-                </Link>
-                <Box sx={{ flex: 1 }} />
-                <TooltipActionIcon
-                  label="Pull tracks from Spotify"
-                  size="lg"
-                  variant="filled"
-                  color="white"
-                  onClick={async () => {
-                    const succeeded = await resolves(pullTracksMutation());
-                    if (succeeded) {
-                      await Promise.all([
-                        invalidateQuery(getTracks),
-                        invalidateQuery(getSearchExamples),
-                      ]);
-                      successNotification("Pulling tracks succeeded!");
-                    } else {
-                      failureNotification("Pulling tracks failed!");
-                    }
-                  }}
-                  loading={pullLoading}
-                >
-                  <IconCloudDownload />
-                </TooltipActionIcon>
-                <TooltipActionIcon
-                  label="Push playlists to Spotify"
-                  size="lg"
-                  variant="filled"
-                  color="white"
-                  onClick={async () => {
-                    const succeeded = await resolves(pushTracksMutation());
-                    if (succeeded) {
-                      await Promise.all([invalidateQuery(getLabels), invalidateQuery(getLabel)]);
-                      successNotification("Pushing playlists succeeded!");
-                    } else {
-                      failureNotification("Pushing playlists failed!");
-                    }
-                  }}
-                  loading={pushLoading}
-                >
-                  <IconCloudUpload />
-                </TooltipActionIcon>
-
-                <Menu shadow="md" width={200} position="bottom-end">
-                  <Menu.Target>
-                    <ActionIcon
-                      size="lg"
-                      variant="filled"
-                      color="white"
-                      radius="xl"
-                      aria-label="User avatar"
-                    >
-                      {user?.avatarUrl ? (
-                        <Avatar src={user.avatarUrl} radius="xl" />
-                      ) : (
-                        <IconUserCircle />
-                      )}
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      icon={<IconLogout />}
-                      onClick={async () => {
-                        await logoutMutation();
-                        await router.push(Routes.LoginPage());
-                      }}
-                    >
-                      Logout
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </>
-            )}
-          </Header>
-        }
-        navbar={navbar}
+        header={{ height: rem(80) }}
+        navbar={navbar ? { width: rem(288), breakpoint: "sm" } : undefined}
       >
-        {children}
+        <AppShell.Header className={classes.header} withBorder={false}>
+          <Title order={1} c="white">
+            Playlist Generator
+          </Title>
+          {user && (
+            <>
+              <Button component={Link} href={Routes.TracksPage()}>
+                Tracks
+              </Button>
+              <Button component={Link} href={Routes.LabelsPage()}>
+                Labels
+              </Button>
+              <div className={classes.headerSpacing} />
+              <TooltipActionIcon
+                label="Pull tracks from Spotify"
+                size="lg"
+                variant="filled"
+                onClick={async () => {
+                  const succeeded = await resolves(pullTracksMutation());
+                  if (succeeded) {
+                    await Promise.all([
+                      invalidateQuery(getTracks),
+                      invalidateQuery(getSearchExamples),
+                    ]);
+                    successNotification("Pulling tracks succeeded!");
+                  } else {
+                    failureNotification("Pulling tracks failed!");
+                  }
+                }}
+                loading={pullLoading}
+              >
+                <IconCloudDownload />
+              </TooltipActionIcon>
+              <TooltipActionIcon
+                label="Push playlists to Spotify"
+                size="lg"
+                variant="filled"
+                onClick={async () => {
+                  const succeeded = await resolves(pushTracksMutation());
+                  if (succeeded) {
+                    await Promise.all([invalidateQuery(getLabels), invalidateQuery(getLabel)]);
+                    successNotification("Pushing playlists succeeded!");
+                  } else {
+                    failureNotification("Pushing playlists failed!");
+                  }
+                }}
+                loading={pushLoading}
+              >
+                <IconCloudUpload />
+              </TooltipActionIcon>
+
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <ActionIcon
+                    size="lg"
+                    variant="filled"
+                    color="white"
+                    radius="xl"
+                    aria-label="User avatar"
+                  >
+                    {user?.avatarUrl ? (
+                      <Avatar src={user.avatarUrl} radius="xl" />
+                    ) : (
+                      <IconUserCircle />
+                    )}
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconLogout />}
+                    onClick={async () => {
+                      await logoutMutation();
+                      await router.push(Routes.LoginPage());
+                    }}
+                  >
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </>
+          )}
+        </AppShell.Header>
+        <AppShell.Navbar>{navbar}</AppShell.Navbar>
+        <AppShell.Main>{children}</AppShell.Main>
       </AppShell>
     </>
   );

@@ -1,0 +1,15 @@
+.header {
+  display: flex;
+  align-items: center;
+  padding: var(--mantine-spacing-md);
+  background-color: var(--mantine-color-blue-5);
+  gap: var(--mantine-spacing-md);
+}
+
+.header :focus {
+  outline-color: var(--mantine-color-white);
+}
+
+.headerSpacing {
+  flex: 1;
+}

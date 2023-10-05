@@ -1,27 +1,18 @@
-import { createStyles } from "@mantine/core";
 import { Label } from "@prisma/client";
 import { useCallback, useEffect } from "react";
 import { useMultiSelectContext } from "../MultiSelectList/MultiSelectList";
 import LabelCheckbox from "./LabelCheckbox";
+import classes from "./TrackListContent.module.css";
 import TrackWrapper from "./TrackWrapper";
 import { TrackWithRelations } from "./types";
 import { useLabelToggle } from "./useLabelToggle";
 import { handleAsyncErrors } from "app/lib/async";
-
-const useStyles = createStyles((theme) => ({
-  header: {
-    display: "flex",
-    gap: theme.spacing.sm,
-    paddingBottom: theme.spacing.sm,
-  },
-}));
 
 interface TrackListContentProps {
   labels: Label[];
 }
 
 const TrackListContent: React.FC<TrackListContentProps> = ({ labels }) => {
-  const { classes } = useStyles();
   const {
     selectedItems: selectedTracks,
     items: tracks,

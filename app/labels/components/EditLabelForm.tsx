@@ -1,6 +1,6 @@
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation, useQuery } from "@blitzjs/rpc";
-import { Box, Button, TextInput, Title } from "@mantine/core";
+import { Button, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { IconTrash, IconX } from "@tabler/icons-react";
@@ -10,6 +10,7 @@ import editLabel from "../mutations/editLabel";
 import getLabel from "../queries/getLabel";
 import getLabels from "../queries/getLabels";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import classes from "./LabelForm.module.css";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import { handleAsyncErrors } from "app/lib/async";
@@ -60,26 +61,24 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
         closeModal={closeModal}
         confirmDelete={(deletePlaylist) => handleAsyncErrors(performDelete(deletePlaylist))}
       />
-      <Box
-        component="form"
+      <form
+        className={classes.form}
         onSubmit={form.onSubmit((values) => {
           handleAsyncErrors(performEdit(values));
         })}
-        sx={{
-          width: "25em",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1em",
-        }}
       >
-        <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-          <Title order={2} sx={{ flex: 1 }}>
+        <div className={classes.header}>
+          <Title className={classes.title} order={2}>
             Edit label ({name})
           </Title>
-          <TooltipActionIcon label="Close" onClick={() => handleAsyncErrors(closeForm())}>
-            <IconX />
+          <TooltipActionIcon
+            label="Close"
+            variant="subtle"
+            onClick={() => handleAsyncErrors(closeForm())}
+          >
+            <IconX className={classes.closeIcon} />
           </TooltipActionIcon>
-        </Box>
+        </div>
         <TextInput required label="Label name" {...form.getInputProps("name")} />
         {smartCriteria === null ? null : (
           <SmartCriteriaInput
@@ -88,25 +87,20 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
             {...form.getInputProps("smartCriteria")}
           />
         )}
-        <Button
-          type="submit"
-          loading={isSaving}
-          disabled={isDeleting}
-          sx={{ width: "10em", alignSelf: "center", marginBottom: "1em" }}
-        >
+        <Button className={classes.submit} type="submit" loading={isSaving} disabled={isDeleting}>
           {isSaving ? "Saving..." : "Save"}
         </Button>
         <Button
+          className={classes.submit}
           loading={isDeleting}
           disabled={isSaving || isDeleting}
           color="red"
-          leftIcon={<IconTrash />}
-          sx={{ width: "10em", alignSelf: "center" }}
+          leftSection={<IconTrash size="1rem" />}
           onClick={() => openModal()}
         >
           {isDeleting ? "Deleting..." : "Delete"}
         </Button>
-      </Box>
+      </form>
     </>
   );
 }

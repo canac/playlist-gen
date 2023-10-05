@@ -1,0 +1,17 @@
+.headerContainer {
+  display: flex;
+  padding-bottom: var(--mantine-spacing-md);
+  gap: var(--mantine-spacing-md);
+}
+
+.refresh {
+  margin-top: calc(var(--mantine-line-height-md) * 1rem);
+}
+
+.searchBox {
+  flex: 2;
+}
+
+.comboboxOption {
+  padding: var(--mantine-spacing-xs);
+}

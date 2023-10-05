@@ -1,35 +1,16 @@
-import { Routes } from "@blitzjs/next";
+import { Routes, useParam } from "@blitzjs/next";
 import { usePaginatedQuery } from "@blitzjs/rpc";
-import { Box, MantineTheme, Navbar, Text, UnstyledButton } from "@mantine/core";
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconCirclePlus,
-  IconTag,
-  IconWand,
-} from "@tabler/icons-react";
+import { Group, NavLink, Pagination, Text, Tooltip } from "@mantine/core";
+import { IconCirclePlus, IconTag, IconWand } from "@tabler/icons-react";
+import clsx from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
-import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
+import classes from "./LabelNavbar.module.css";
 import getLabels from "app/labels/queries/getLabels";
 import { handleAsyncErrors } from "app/lib/async";
 
 const ITEMS_PER_PAGE = 100;
-
-function buttonStyles(theme: MantineTheme) {
-  return {
-    padding: theme.spacing.xs,
-    borderRadius: theme.radius.sm,
-    width: "100%",
-
-    "&:hover": {
-      backgroundColor: theme.colors.gray[0],
-    },
-  };
-}
 
 export default function LabelNavbar(): JSX.Element {
   const router = useRouter();
@@ -39,82 +20,76 @@ export default function LabelNavbar(): JSX.Element {
     take: ITEMS_PER_PAGE,
   });
   const pageCount = Math.ceil(count / ITEMS_PER_PAGE);
+  const activeLabelId = useParam("labelId", "number");
 
   function gotoPage(page: number) {
     handleAsyncErrors(router.push({ query: { ...router.query, page } }));
   }
 
   return (
-    <Navbar width={{ base: 250 }} sx={{ display: "flex", overflow: "scroll" }}>
+    <div className={classes.navbar}>
       {labels.map((label) => (
-        <Box key={label.id} sx={buttonStyles}>
-          <Link href={Routes.EditLabelPage({ page, labelId: label.id })}>
-            <UnstyledButton>
-              <Text>
-                <IconTag size={16} style={{ marginRight: "0.25em" }} />
-                <Text component="span" weight="bold">
+        <NavLink
+          key={label.id}
+          component={Link}
+          href={Routes.EditLabelPage({ page, labelId: label.id })}
+          active={label.id === activeLabelId}
+          leftSection={<IconTag size={16} />}
+          label={
+            <>
+              <Text span>
+                <Text span fw="bold">
                   {label.name}
                 </Text>{" "}
                 ({label.numTracks})
               </Text>
               {label.smartCriteria && (
-                <Text color="dimmed" size="sm">
-                  <IconWand size={12} style={{ marginRight: "0.25em" }} /> {label.smartCriteria}
+                <Text c="dimmed" size="sm">
+                  <IconWand size={12} /> {label.smartCriteria}
                 </Text>
               )}
-            </UnstyledButton>
-          </Link>
-        </Box>
+            </>
+          }
+        />
       ))}
-      <Link href={Routes.NewLabelPage({ page })}>
-        <UnstyledButton sx={buttonStyles}>
-          <Text weight="bold" sx={{ display: "flex", alignItems: "center" }}>
-            <IconCirclePlus size={16} style={{ marginRight: "0.25em" }} color="green" />
+      <NavLink
+        component={Link}
+        href={Routes.NewLabelPage({ page })}
+        active={router.pathname === Routes.NewLabelPage().pathname}
+        leftSection={<IconCirclePlus color="green" size={16} />}
+        label={
+          <Text span fw="bold">
             Create label...
           </Text>
-        </UnstyledButton>
-      </Link>
-      <Box sx={{ flex: 1 }} />
+        }
+      />
+      <div className={classes.sidebarSpacing} />
 
       {pageCount > 1 || page > 1 ? (
-        <Box sx={(theme) => ({ display: "flex", flexDirection: "row", padding: theme.spacing.xs })}>
-          <TooltipActionIcon
-            label="Go to first page"
-            variant="transparent"
-            disabled={page === 1}
-            onClick={() => gotoPage(1)}
-          >
-            <IconChevronsLeft />
-          </TooltipActionIcon>
-          <TooltipActionIcon
-            label="Go to previous page"
-            variant="transparent"
-            disabled={page === 1}
-            onClick={() => gotoPage(page - 1)}
-          >
-            <IconChevronLeft />
-          </TooltipActionIcon>
-          <Text align="center" color={page > pageCount ? "red" : undefined} sx={{ flex: 1 }}>
-            Page {page} of {pageCount}
-          </Text>
-          <TooltipActionIcon
-            label="Go to next page"
-            variant="transparent"
-            disabled={page >= pageCount}
-            onClick={() => gotoPage(page + 1)}
-          >
-            <IconChevronRight />
-          </TooltipActionIcon>
-          <TooltipActionIcon
-            label="Go to last page"
-            variant="transparent"
-            disabled={page >= pageCount}
-            onClick={() => gotoPage(pageCount)}
-          >
-            <IconChevronsRight />
-          </TooltipActionIcon>
-        </Box>
+        <Pagination.Root total={pageCount} onChange={(page) => gotoPage(page)} p={4} fz="sm">
+          <Group gap={4} justify="center">
+            <Tooltip label="Go to first page">
+              <Pagination.First />
+            </Tooltip>
+            <Tooltip label="Go to previous page">
+              <Pagination.Previous />
+            </Tooltip>
+            <Text
+              className={clsx(classes.currentPage, {
+                [classes.currentPageInvalid!]: page > pageCount,
+              })}
+            >
+              Page {page} of {pageCount}
+            </Text>
+            <Tooltip label="Go to next page">
+              <Pagination.Next />
+            </Tooltip>
+            <Tooltip label="Go to last page">
+              <Pagination.Last />
+            </Tooltip>
+          </Group>
+        </Pagination.Root>
       ) : null}
-    </Navbar>
+    </div>
   );
 }

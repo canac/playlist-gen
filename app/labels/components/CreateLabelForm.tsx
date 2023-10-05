@@ -1,11 +1,12 @@
 import { Routes } from "@blitzjs/next";
 import { invalidateQuery, useMutation } from "@blitzjs/rpc";
-import { Box, Button, Checkbox, TextInput, Title } from "@mantine/core";
+import { Button, Checkbox, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconX } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import createLabel from "../mutations/createLabel";
 import getLabels from "../queries/getLabels";
+import classes from "./LabelForm.module.css";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import { handleAsyncErrors } from "app/lib/async";
@@ -24,8 +25,8 @@ export default function CreateLabelForm(): JSX.Element {
   }
 
   return (
-    <Box
-      component="form"
+    <form
+      className={classes.form}
       onSubmit={form.onSubmit(({ name, smartLabel, smartCriteria, generatePlaylist }) => {
         handleAsyncErrors(
           (async () => {
@@ -39,21 +40,19 @@ export default function CreateLabelForm(): JSX.Element {
           })(),
         );
       })}
-      sx={{
-        width: "25em",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1em",
-      }}
     >
-      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-        <Title order={2} sx={{ flex: 1 }}>
+      <div className={classes.header}>
+        <Title className={classes.title} order={2}>
           Create label
         </Title>
-        <TooltipActionIcon label="Close" onClick={() => handleAsyncErrors(close())}>
-          <IconX />
+        <TooltipActionIcon
+          label="Close"
+          variant="subtle"
+          onClick={() => handleAsyncErrors(close())}
+        >
+          <IconX className={classes.closeIcon} />
         </TooltipActionIcon>
-      </Box>
+      </div>
       <TextInput required label="Label name" {...form.getInputProps("name")} />
       <Checkbox label="Smart label" {...form.getInputProps("smartLabel")} />
       {form.values.smartLabel ? (
@@ -65,13 +64,9 @@ export default function CreateLabelForm(): JSX.Element {
       ) : (
         <Checkbox label="Generate playlist" {...form.getInputProps("generatePlaylist")} />
       )}
-      <Button
-        type="submit"
-        loading={isCreating}
-        sx={{ width: "10em", alignSelf: "center", marginBottom: "1em" }}
-      >
+      <Button className={classes.submit} type="submit" loading={isCreating}>
         {isCreating ? "Creating..." : "Create"}
       </Button>
-    </Box>
+    </form>
   );
 }

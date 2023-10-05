@@ -29,7 +29,7 @@ export default function SmartCriteriaInput(props: TextInputProps): JSX.Element {
         }}
       />
       {result?.success === false && result.error.message && (
-        <Text color="red" weight="bold">
+        <Text c="red" fw="bold">
           {result.error.message}
         </Text>
       )}
