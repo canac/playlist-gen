@@ -1,7 +1,8 @@
 import { resolver } from "@blitzjs/rpc";
+import { isEqual } from "lodash";
 import { z } from "zod";
 import { nonEmptyString } from "app/lib/zodTypes";
-import db from "db";
+import db, { Prisma } from "db";
 
 const schema = z.object({
   // The name of the new label
@@ -24,15 +25,27 @@ export default resolver.pipe(
     const userId = ctx.session.userId;
 
     // Create the label
-    const { id } = await db.label.create({
-      data: {
-        userId,
-        name,
-        smartCriteria,
-        generatePlaylist: generatePlaylist || smartCriteria !== null,
-      },
-    });
+    try {
+      const { id } = await db.label.create({
+        data: {
+          userId,
+          name,
+          smartCriteria,
+          generatePlaylist: generatePlaylist || smartCriteria !== null,
+        },
+      });
 
-    return { id };
+      return { id };
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002" &&
+        isEqual(err.meta?.target, ["userId", "name"])
+      ) {
+        throw new Error("A label with this name already exists");
+      } else {
+        throw err;
+      }
+    }
   },
 );

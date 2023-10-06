@@ -16,3 +16,7 @@ export const failureNotification = (message: string) => {
     icon: <IconX />,
   });
 };
+
+export const displayError = (error: unknown) => {
+  failureNotification(error instanceof Error ? error.message : "An unknown error occurred");
+};

@@ -133,4 +133,6 @@ model Label {
   generatePlaylist Boolean      @default(true)
   playlistId       String?      @unique
   trackLabels      TrackLabel[]
+
+  @@unique([userId, name])
 }

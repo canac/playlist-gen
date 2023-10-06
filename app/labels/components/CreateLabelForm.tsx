@@ -10,6 +10,7 @@ import classes from "./LabelForm.module.css";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import { handleAsyncErrors } from "app/lib/async";
+import { displayError } from "app/lib/notification";
 
 export default function CreateLabelForm(): JSX.Element {
   const router = useRouter();
@@ -27,18 +28,18 @@ export default function CreateLabelForm(): JSX.Element {
   return (
     <form
       className={classes.form}
-      onSubmit={form.onSubmit(({ name, smartLabel, smartCriteria, generatePlaylist }) => {
-        handleAsyncErrors(
-          (async () => {
-            await createLabelMutation({
-              name,
-              smartCriteria: smartLabel ? smartCriteria : null,
-              generatePlaylist,
-            });
-            await invalidateQuery(getLabels);
-            await close();
-          })(),
-        );
+      onSubmit={form.onSubmit(async ({ name, smartLabel, smartCriteria, generatePlaylist }) => {
+        try {
+          await createLabelMutation({
+            name,
+            smartCriteria: smartLabel ? smartCriteria : null,
+            generatePlaylist,
+          });
+          await invalidateQuery(getLabels);
+          await close();
+        } catch (err) {
+          displayError(err);
+        }
       })}
     >
       <div className={classes.header}>

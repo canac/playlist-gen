@@ -14,6 +14,7 @@ import classes from "./LabelForm.module.css";
 import SmartCriteriaInput from "./SmartCriteriaInput";
 import { TooltipActionIcon } from "app/core/components/TooltipActionIcon";
 import { handleAsyncErrors } from "app/lib/async";
+import { displayError } from "app/lib/notification";
 
 export type EditLabelProps = {
   labelId: number;
@@ -31,15 +32,19 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
   });
 
   const performEdit = async (values: typeof form.values) => {
-    await editLabelMutation({
-      labelId,
-      fields: {
-        name: values.name,
-        smartCriteria: smartCriteria === null ? undefined : values.smartCriteria,
-      },
-    });
-    await Promise.all([invalidateQuery(getLabels), invalidateQuery(getLabel, { labelId })]);
-    await closeForm();
+    try {
+      await editLabelMutation({
+        labelId,
+        fields: {
+          name: values.name,
+          smartCriteria: smartCriteria === null ? undefined : values.smartCriteria,
+        },
+      });
+      await Promise.all([invalidateQuery(getLabels), invalidateQuery(getLabel, { labelId })]);
+      await closeForm();
+    } catch (err) {
+      displayError(err);
+    }
   };
 
   const performDelete = async (deletePlaylist: boolean) => {
@@ -61,12 +66,7 @@ export default function EditLabelForm({ labelId }: EditLabelProps): JSX.Element 
         closeModal={closeModal}
         confirmDelete={(deletePlaylist) => handleAsyncErrors(performDelete(deletePlaylist))}
       />
-      <form
-        className={classes.form}
-        onSubmit={form.onSubmit((values) => {
-          handleAsyncErrors(performEdit(values));
-        })}
-      >
+      <form className={classes.form} onSubmit={form.onSubmit((values) => performEdit(values))}>
         <div className={classes.header}>
           <Title className={classes.title} order={2}>
             Edit label ({name})
