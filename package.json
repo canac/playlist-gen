@@ -29,8 +29,7 @@
     ]
   },
   "volta": {
-    "node": "16.17.1",
-    "npm": "8.10.0"
+    "node": "18.18.0"
   },
   "dependencies": {
     "@blitzjs/auth": "2.0.0-beta.34",
