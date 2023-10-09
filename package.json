@@ -7,7 +7,8 @@
     "start": "blitz start",
     "studio": "blitz prisma studio",
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx . && stylelint app/**/*.css",
-    "test": "vitest",
+    "test": "vitest --run",
+    "test:watch": "vitest",
     "prepare": "husky install",
     "grammar-gen": "earley-bird compile labelGrammar.ne --outdir app/lib --outfile labelGrammar.ts"
   },
@@ -20,7 +21,8 @@
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
-      "eslint --fix"
+      "eslint --fix",
+      "vitest related --run"
     ],
     "*.css": [
       "stylelint --fix"
