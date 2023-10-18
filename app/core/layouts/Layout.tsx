@@ -40,7 +40,7 @@ const Layout: BlitzLayout<{
   return (
     <>
       <Head>
-        <title>{title || "playlist-gen-blitz"}</title>
+        <title>{title || "playlist-gen"}</title>
       </Head>
 
       <AppShell

@@ -3,7 +3,7 @@ import { setupBlitzClient } from "@blitzjs/next";
 import { BlitzRpcPlugin } from "@blitzjs/rpc";
 
 export const authConfig = {
-  cookiePrefix: "playlist-gen-blitz",
+  cookiePrefix: "playlist-gen",
 };
 
 export const { withBlitz } = setupBlitzClient({

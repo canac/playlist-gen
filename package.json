@@ -1,5 +1,5 @@
 {
-  "name": "playlist-gen-blitz",
+  "name": "playlist-gen",
   "version": "1.0.0",
   "scripts": {
     "dev": "blitz dev --port $PORT",
